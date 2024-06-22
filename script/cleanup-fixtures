@@ -1,0 +1,98 @@
+#!/usr/bin/env python
+
+import json
+from pathlib import Path
+from bs4 import BeautifulSoup, NavigableString
+
+
+class JSONResponseAnonymizer:
+    """JSON response anonymizer to shorten and prettify response object."""
+
+    FIXTURES = [
+        "realtime_api_response.json",
+    ]
+
+    def run(self):
+        for fixture in self.FIXTURES:
+            path = Path(__file__).parent.parent.joinpath("tests/fixtures", fixture)
+            text = path.read_text()
+            obj = json.loads(text)
+            obj = self._shorten(obj)
+            text = json.dumps(obj, indent=4)
+            path.write_text(text)
+
+    def _shorten(self, obj):
+        obj["data"]["series"] = obj["data"]["series"][-4:]
+
+        return obj
+
+
+class WebPageAnonymizer:
+    """Web page anonymizer to remove personal info, shorten, and prettify."""
+
+    FIXTURES = [
+        "login_success.html",
+        "login_error.html",
+    ]
+
+    def run(self):
+        for fixture in self.FIXTURES:
+            path = Path(__file__).parent.parent.joinpath("tests/fixtures", fixture)
+            html = path.read_text()
+            soup = self._shorten(BeautifulSoup(html, "html.parser"))
+            account = soup.find(id="account-navigation")
+
+            if account:
+                address = account.find(lambda tag: tag.get("notranslate") == "")
+                address.string = " 123 N Main St,\n   Bend OR 97701"
+                account_number = soup.find("var")
+                account_number.string = "1234567-8900"
+
+            soup.smooth()
+
+            path.write_text(soup.prettify())
+
+    def _shorten(self, doc):
+        stack = [doc]
+
+        while len(stack):
+            node = stack.pop()
+
+            if self._contains_target(node) or self._is_target(node):
+                if not self._is_target(node):
+                    stack.extend(node.contents)
+            else:
+                node.extract()
+
+        return doc
+
+    def _contains_target(self, node):
+        is_string = isinstance(node, NavigableString)
+        has_account = False
+        has_errors = False
+
+        if not is_string:
+            has_account = node.find(id="account-navigation") is not None
+            has_errors = len(node.select(".error-message")) > 0
+
+        return has_account or has_errors
+
+    def _is_target(self, node):
+        is_string = isinstance(node, NavigableString)
+        is_account = False
+        is_errors = False
+
+        if not is_string:
+            is_account = node.get("id") == "account-navigation"
+            is_errors = "error-message" in node.get("class", "")
+
+        return is_account or is_errors
+
+
+def main():
+    WebPageAnonymizer().run()
+    JSONResponseAnonymizer().run()
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,30 @@
+{
+    "data": {
+        "series": [
+            {
+                "read_datetime": 1718823600,
+                "gallons": 7.48,
+                "flags": null,
+                "leak_gallons": 0
+            },
+            {
+                "read_datetime": 1718827200,
+                "gallons": 0,
+                "flags": null,
+                "leak_gallons": 0
+            },
+            {
+                "read_datetime": 1718830800,
+                "gallons": 7.48,
+                "flags": null,
+                "leak_gallons": 0
+            },
+            {
+                "read_datetime": 1718834400,
+                "gallons": 0,
+                "flags": null,
+                "leak_gallons": 0
+            }
+        ]
+    }
+}

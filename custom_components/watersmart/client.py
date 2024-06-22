@@ -9,7 +9,7 @@ import re
 import aiohttp
 from bs4 import BeautifulSoup
 
-ACCOUNT_NUMBER_RE = re.compile(r"[\d-]+")
+ACCOUNT_NUMBER_RE = re.compile(r"^[\d-]+$")
 
 
 def _authenticated(func):
@@ -27,6 +27,10 @@ class AuthenticationError(Exception):
     def __init__(self, errors=None) -> None:
         """Initialize."""
         self._errors = errors
+
+
+class ScrapeError(Exception):
+    """Scrape Error."""
 
 
 class WaterSmartClient:
@@ -94,9 +98,12 @@ class WaterSmartClient:
         if len(errors):
             raise AuthenticationError(errors)
 
-        account = soup.find(id="account-navigation")
-        account_number_title = account.find(
-            lambda node: node.string == "Account Number"
+        account = _assert_node(
+            soup.find(id="account-navigation"), "Missing #account-navigation"
+        )
+        account_number_title = _assert_node(
+            account.find(lambda node: node.get_text(strip=True) == "Account Number"),
+            "Missing tag with string content `Account Number` under #account-navigation",
         )
         account_section = account_number_title.parent
         account_number_title.extract()
@@ -107,3 +114,9 @@ class WaterSmartClient:
             account_number = None
 
         self._account_number = account_number
+
+
+def _assert_node(node, message):
+    if not node:
+        raise ScrapeError(message)
+    return node
