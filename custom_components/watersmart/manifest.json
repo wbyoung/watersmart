@@ -1,11 +1,18 @@
 {
-  "codeowners": ["@wbyoung"],
+  "domain": "watersmart",
+  "name": "WaterSmart",
+  "codeowners": [
+    "@wbyoung"
+  ],
+  "version": "0.1.0",
   "config_flow": true,
   "dependencies": [],
-  "documentation": "https://github.com/wbyoung/watersmart/",
-  "domain": "watersmart",
+  "documentation": "https://www.home-assistant.io/integrations/watersmart",
+  "homekit": {},
   "iot_class": "cloud_polling",
-  "name": "WaterSmart",
-  "requirements": [],
-  "version": "0.1.0"
+  "requirements": [
+    "beautifulsoup4==4.12.3"
+  ],
+  "ssdp": [],
+  "zeroconf": []
 }

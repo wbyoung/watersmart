@@ -1,0 +1,33 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "host": "[%key:common::config_flow::data::host%]",
+          "username": "[%key:common::config_flow::data::username%]",
+          "password": "[%key:common::config_flow::data::password%]"
+        },
+        "description": "Enter your host and credentials. The host is the subdomain for accessing Watersmart, i.e. `bendoregon` for https://bendoregon.watersmart.com/.",
+        "title": "Subdomain & Authentication"
+      }
+    },
+    "error": {
+      "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
+      "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]",
+      "unknown": "[%key:common::config_flow::error::unknown%]"
+    },
+    "abort": {
+      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "gallons_for_most_recent_hour": {
+        "name": "Most recent hour usage"
+      },
+      "gallons_for_most_recent_full_day": {
+        "name": "Most recent full day usage"
+      }
+    }
+  }
+}
