@@ -33,3 +33,6 @@ jobs:
     - name: Test with pytest
       run: |
         pytest
+    - name: Validate coverage
+      run: |
+        coverage json -q -o - | python3 .github/validate_coverage.py
