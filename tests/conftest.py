@@ -3,8 +3,6 @@
 from unittest.mock import AsyncMock, patch
 from pathlib import Path
 
-# from asynctest import CoroutineMock, MagicMock, patch
-# import aiohttp
 import json
 import pytest
 from typing import Generator
@@ -20,8 +18,18 @@ class FixtureLoader:
 
     def __getattr__(self, name):
         name, ext = name.rsplit("_", 1)
+        parse = False
 
-        return FIXTURES_DIR.joinpath(f"{name}.{ext}").read_text()
+        if ext == "obj":
+            parse = True
+            ext = "json"
+
+        data = FIXTURES_DIR.joinpath(f"{name}.{ext}").read_text()
+
+        if parse:
+            data = json.loads(data)
+
+        return data
 
 
 @pytest.fixture
@@ -68,3 +76,25 @@ def mock_aiohttp_session() -> Generator[dict[str, AsyncMock], None, None]:
         )
 
         yield session
+
+
+@pytest.fixture
+def mock_watersmart_client() -> Generator[AsyncMock, None, None]:
+    """Mock a WaterSmart client."""
+
+    hourly_data = FixtureLoader().realtime_api_response_obj["data"]["series"]
+
+    with (
+        patch(
+            "custom_components.watersmart.client.WaterSmartClient", autospec=True
+        ) as mock_client,
+        patch(
+            "custom_components.watersmart.config_flow.WaterSmartClient",
+            new=mock_client,
+        ),
+    ):
+        client = mock_client.return_value
+        client.async_get_account_number.return_value = "1234567-8900"
+        client.async_get_hourly_data.return_value = hourly_data
+
+        yield client
