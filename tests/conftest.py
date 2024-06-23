@@ -89,7 +89,15 @@ def mock_watersmart_client() -> Generator[AsyncMock, None, None]:
             "custom_components.watersmart.client.WaterSmartClient", autospec=True
         ) as mock_client,
         patch(
+            "custom_components.watersmart.WaterSmartClient",
+            new=mock_client,
+        ),
+        patch(
             "custom_components.watersmart.config_flow.WaterSmartClient",
+            new=mock_client,
+        ),
+        patch(
+            "custom_components.watersmart.coordinator.WaterSmartClient",
             new=mock_client,
         ),
     ):
