@@ -74,6 +74,20 @@ Gallons of water used on the most recent hour of data available.
 * `related`: List of related objects with `start` and `gallons` starting from the most recent
   hour.
 
+## Services
+
+### `watersmart.get_hourly_history`
+
+Fetches hourly water usage. The `config_entry` value be found using the _Services_ tab in the _Developer Tools_, selecting the desired entity and then switching to YAML.
+
+#### Service Data Attributes
+
+* `config_entry`: **required** Config entry to use. Example: `1b4a46c6cba0677bbfb5a8c53e8618b0`.
+* `cached`: Accept data from the integration cache instead of re-fetching. Defaults to `false`.
+* `start`: Start time to history. Example: `2024-06-19T19:30:00-07:00`.
+* `end`: End time to history. Example: `2024-06-19T21:30:00-07:00`.
+
+
 ## Credits
 
 Icon designed by [bsd studio][bsd-attribution].

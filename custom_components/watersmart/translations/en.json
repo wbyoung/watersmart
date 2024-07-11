@@ -42,7 +42,7 @@
         }
     },
     "services": {
-        "get_water_usage_hourly_history": {
+        "get_hourly_history": {
             "description": "Request hourly water usage from WaterSmart.",
             "fields": {
                 "cached": {

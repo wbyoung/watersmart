@@ -30,7 +30,7 @@ ATTR_CONFIG_ENTRY: Final = "config_entry"
 ATTR_FROM_CACHE: Final = "cached"
 ATTR_START: Final = "start"
 ATTR_END: Final = "end"
-HOURLY_HISTORY_SERVICE_NAME: Final = "get_water_usage_hourly_history"
+HOURLY_HISTORY_SERVICE_NAME: Final = "get_hourly_history"
 
 SERVICE_SCHEMA: Final = vol.Schema(
     {
