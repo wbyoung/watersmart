@@ -29,5 +29,40 @@
                 "name": "Most recent hour usage"
             }
         }
+    },
+    "exceptions": {
+        "invalid_config_entry": {
+            "message": "Invalid config entry provided. Got {config_entry}"
+        },
+        "invalid_date": {
+            "message": "Invalid date provided. Got {date}"
+        },
+        "unloaded_config_entry": {
+            "message": "Invalid config entry provided. {config_entry} is not loaded."
+        }
+    },
+    "services": {
+        "get_water_usage_hourly_history": {
+            "description": "Request hourly water usage from WaterSmart.",
+            "fields": {
+                "cached": {
+                    "description": "Accept data from the integration cache instead of re-fetching.",
+                    "name": "Cached Data"
+                },
+                "config_entry": {
+                    "description": "The config entry to use for this service.",
+                    "name": "Config Entry"
+                },
+                "end": {
+                    "description": "Specifies the date and time until which to retrieve usage.",
+                    "name": "End"
+                },
+                "start": {
+                    "description": "Specifies the date and time from which to retrieve usage.",
+                    "name": "Start"
+                }
+            },
+            "name": "Get hourly water usage history"
+        }
     }
 }

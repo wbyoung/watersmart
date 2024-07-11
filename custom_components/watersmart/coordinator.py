@@ -121,7 +121,7 @@ def _sensor_data_for_most_recent_hour(data: dict[str, Any]) -> dict[str, Any]:
         "state": record["gallons"],
         "attrs": {
             "start": record_date.isoformat(),
-            "related": _records_for_attrs(records),
+            "related": _serialize_records(records),
         },
     }
 
@@ -136,7 +136,7 @@ def _sensor_data_for_most_recent_full_day(data: dict[str, Any]) -> dict[str, Any
     return {
         "state": gallons,
         "attrs": {
-            "related": _records_for_attrs(records),
+            "related": _serialize_records(records),
         },
     }
 
@@ -166,8 +166,8 @@ def _records_from_first_full_day(data):
     return list(reversed(full_day_records))
 
 
-def _records_for_attrs(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Convert records for returning in attributes."""
+def _serialize_records(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Convert records for returning in attributes & service calls."""
 
     return [
         {

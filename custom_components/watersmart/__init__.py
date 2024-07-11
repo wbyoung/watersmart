@@ -2,26 +2,26 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.typing import ConfigType
 
 from .client import WaterSmartClient
+from .const import DOMAIN
 from .coordinator import WaterSmartUpdateCoordinator
+from .services import async_setup_services
+from .types import WaterSmartConfigEntry, WaterSmartData
 
 PLATFORMS: list[Platform] = [Platform.SENSOR]
 
-type WaterSmartConfigEntry = ConfigEntry[WaterSmartData]
 
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    """Set up WaterSmart services."""
 
-@dataclass
-class WaterSmartData:
-    """Runtime data definition."""
+    async_setup_services(hass)
 
-    coordinator: WaterSmartUpdateCoordinator
+    return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: WaterSmartConfigEntry) -> bool:
@@ -47,6 +47,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: WaterSmartConfigEntry) -
     entry.runtime_data = WaterSmartData(
         coordinator=coordinator,
     )
+
+    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = entry.runtime_data
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 

@@ -1,0 +1,1325 @@
+# serializer version: 1
+# name: test_service[cached0-2-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T22:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T19:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[cached0-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T22:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T19:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[cached1-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T22:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T19:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[cached1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T22:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T19:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[cached2-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T22:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T19:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[cached2-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T22:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T19:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end0-start0-cached0-2-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end0-start0-cached1-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end0-start0-cached2-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end0-start1-cached0-2-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end0-start1-cached1-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end0-start1-cached2-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end0-start2-cached0-2-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end0-start2-cached1-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end0-start2-cached2-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end0-start3-cached0-2-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end0-start3-cached1-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end0-start3-cached2-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end0-start4-cached0-2-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T19:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end0-start4-cached1-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T19:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end0-start4-cached2-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T19:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end1-start0-cached0-2-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end1-start0-cached1-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end1-start0-cached2-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end1-start1-cached0-2-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end1-start1-cached1-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end1-start1-cached2-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end1-start2-cached0-2-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end1-start2-cached1-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end1-start2-cached2-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end1-start3-cached0-2-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end1-start3-cached1-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end1-start3-cached2-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end1-start4-cached0-2-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T19:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end1-start4-cached1-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T19:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end1-start4-cached2-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T19:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end2-start0-cached0-2-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end2-start0-cached1-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end2-start0-cached2-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end2-start1-cached0-2-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end2-start1-cached1-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end2-start1-cached2-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end2-start2-cached0-2-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end2-start2-cached1-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end2-start2-cached2-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end2-start3-cached0-2-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end2-start3-cached1-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end2-start3-cached2-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end2-start4-cached0-2-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T19:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end2-start4-cached1-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T19:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end2-start4-cached2-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T19:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end3-start0-cached0-2-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end3-start0-cached1-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end3-start0-cached2-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end3-start1-cached0-2-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end3-start1-cached1-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end3-start1-cached2-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end3-start2-cached0-2-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end3-start2-cached1-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end3-start2-cached2-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end3-start3-cached0-2-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end3-start3-cached1-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end3-start3-cached2-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end3-start4-cached0-2-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T19:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end3-start4-cached1-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T19:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end3-start4-cached2-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T19:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end4-start0-cached0-2-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T22:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end4-start0-cached1-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T22:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end4-start0-cached2-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T22:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end4-start1-cached0-2-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T22:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end4-start1-cached1-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T22:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end4-start1-cached2-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T22:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end4-start2-cached0-2-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T22:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end4-start2-cached1-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T22:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end4-start2-cached2-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T22:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end4-start3-cached0-2-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T22:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end4-start3-cached1-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T22:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end4-start3-cached2-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T22:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end4-start4-cached0-2-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T19:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T22:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end4-start4-cached1-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T19:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T22:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[end4-start4-cached2-1-get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T19:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T22:00:00-07:00',
+      }),
+    ]),
+  })
+# ---
+# name: test_service[get_water_usage_hourly_history]
+  dict({
+    'history': list([
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T22:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T21:00:00-07:00',
+      }),
+      dict({
+        'gallons': 0,
+        'start': '2024-06-19T20:00:00-07:00',
+      }),
+      dict({
+        'gallons': 7.48,
+        'start': '2024-06-19T19:00:00-07:00',
+      }),
+    ]),
+  })
+# ---

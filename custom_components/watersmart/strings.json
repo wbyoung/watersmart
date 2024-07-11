@@ -20,6 +20,17 @@
       "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
     }
   },
+  "exceptions": {
+    "invalid_date": {
+      "message": "Invalid date provided. Got {date}"
+    },
+    "invalid_config_entry": {
+      "message": "Invalid config entry provided. Got {config_entry}"
+    },
+    "unloaded_config_entry": {
+      "message": "Invalid config entry provided. {config_entry} is not loaded."
+    }
+  },
   "entity": {
     "sensor": {
       "gallons_for_most_recent_hour": {
@@ -27,6 +38,30 @@
       },
       "gallons_for_most_recent_full_day": {
         "name": "Most recent full day usage"
+      }
+    }
+  },
+  "services": {
+    "get_water_usage_hourly_history": {
+      "name": "Get hourly water usage history",
+      "description": "Request hourly water usage from WaterSmart.",
+      "fields": {
+        "config_entry": {
+          "name": "Config Entry",
+          "description": "The config entry to use for this service."
+        },
+        "cached": {
+          "name": "Cached Data",
+          "description": "Accept data from the integration cache instead of re-fetching."
+        },
+        "start": {
+          "name": "Start",
+          "description": "Specifies the date and time from which to retrieve usage."
+        },
+        "end": {
+          "name": "End",
+          "description": "Specifies the date and time until which to retrieve usage."
+        }
       }
     }
   }
