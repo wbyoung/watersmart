@@ -64,7 +64,7 @@ class WaterSmartUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     async def _async_update_data(self) -> list[dict[str, Any]]:
         """Update data via library."""
         try:
-            async with timeout(10):
+            async with timeout(30):
                 result = {
                     "hourly": await self.watersmart.async_get_hourly_data(),
                 }

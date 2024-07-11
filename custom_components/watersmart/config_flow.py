@@ -42,7 +42,7 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     )
 
     try:
-        async with timeout(10):
+        async with timeout(30):
             account_number = await client.async_get_account_number()
     except (ClientConnectorError, TimeoutError, ClientError) as error:
         raise CannotConnect from error
