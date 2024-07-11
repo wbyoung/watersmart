@@ -35,7 +35,6 @@ class FixtureLoader:
 @pytest.fixture
 def fixture_loader():
     return FixtureLoader()
-    return FIXTURES_DIR.joinpath("login_success.html").read_text()
 
 
 @pytest.fixture(autouse=True)
