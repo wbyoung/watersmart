@@ -1,13 +1,30 @@
 """Fixtures for testing."""
 
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, patch, PropertyMock
 from pathlib import Path
+
+from homeassistant.core import HomeAssistant
 
 import json
 import pytest
 from typing import Generator
 
+from pytest_homeassistant_custom_component.common import (
+    MockConfigEntry,
+)
+
+from custom_components.watersmart.client import AuthenticationError
+from custom_components.watersmart.const import DOMAIN
+
 FIXTURES_DIR = Path(__file__).parent.joinpath("fixtures")
+
+
+class AdvacnedPropertyMock(PropertyMock):
+    def __get__(self, obj, obj_type=None):
+        return self(obj)
+
+    def __set__(self, obj, val):
+        self(obj, val)
 
 
 class FixtureLoader:
@@ -78,10 +95,10 @@ def mock_aiohttp_session() -> Generator[dict[str, AsyncMock], None, None]:
 
 
 @pytest.fixture
-def mock_watersmart_client() -> Generator[AsyncMock, None, None]:
+def mock_watersmart_client(fixture_loader) -> Generator[AsyncMock, None, None]:
     """Mock a WaterSmart client."""
 
-    hourly_data = FixtureLoader().realtime_api_response_obj["data"]["series"]
+    hourly_data = fixture_loader.realtime_api_response_obj["data"]["series"]
 
     with (
         patch(
@@ -105,3 +122,66 @@ def mock_watersmart_client() -> Generator[AsyncMock, None, None]:
         client.async_get_hourly_data.return_value = hourly_data
 
         yield client
+
+
+@pytest.fixture
+def client_authentication_error(mock_watersmart_client):
+    mock_watersmart_client.async_get_hourly_data.side_effect = AuthenticationError(
+        "invalid credentials"
+    )
+
+
+@pytest.fixture
+def mock_sensor_name() -> Generator[PropertyMock, None, None]:
+    """Mock sensor names.
+
+    This testing setup/library does not use `strings.json` and the entity description to translation key
+    to get the entity name, so it's being patched here to just use the translaiton key. That way we at least
+    get entity ids that are closer to what they will really be.
+    """
+
+    with patch(
+        "homeassistant.components.sensor.SensorEntity.name",
+        new_callable=AdvacnedPropertyMock,
+    ) as mock_name:
+
+        def name_from_entity_description(sensor):
+            return sensor.entity_description.translation_key.replace(
+                "_", " "
+            ).capitalize()
+
+        mock_name.side_effect = lambda self: (
+            name_from_entity_description(self) if self else None
+        )
+
+        yield mock_name
+
+
+@pytest.fixture
+def mock_config_entry() -> MockConfigEntry:
+    """Return the default mocked config entry."""
+    return MockConfigEntry(
+        domain=DOMAIN,
+        data={
+            "host": "test",
+            "username": "test@home-assistant.io",
+            "password": "Passw0rd",
+        },
+    )
+
+
+@pytest.fixture
+async def init_integration(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+    mock_sensor_name: Generator[PropertyMock, None, None],
+    mock_watersmart_client: Generator[AsyncMock, None, None],
+) -> MockConfigEntry:
+    """Set up the WaterSmart integration for testing."""
+
+    mock_config_entry.add_to_hass(hass)
+
+    await hass.config_entries.async_setup(mock_config_entry.entry_id)
+    await hass.async_block_till_done()
+
+    return mock_config_entry

@@ -3,3 +3,4 @@ pre-commit==3.7.1
 pytest==8.2.0
 pytest-cov==5.0.0
 pytest-homeassistant-custom-component==0.13.135
+syrupy==4.6.1
