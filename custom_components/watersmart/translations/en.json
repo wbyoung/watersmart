@@ -1,0 +1,33 @@
+{
+    "config": {
+        "abort": {
+            "already_configured": "Device is already configured"
+        },
+        "error": {
+            "cannot_connect": "Failed to connect",
+            "invalid_auth": "Invalid authentication",
+            "unknown": "Unexpected error"
+        },
+        "step": {
+            "user": {
+                "data": {
+                    "host": "Host",
+                    "password": "Password",
+                    "username": "Username"
+                },
+                "description": "Enter your host and credentials. The host is the subdomain for accessing Watersmart, i.e. `bendoregon` for https://bendoregon.watersmart.com/.",
+                "title": "Subdomain & Authentication"
+            }
+        }
+    },
+    "entity": {
+        "sensor": {
+            "gallons_for_most_recent_full_day": {
+                "name": "Most recent full day usage"
+            },
+            "gallons_for_most_recent_hour": {
+                "name": "Most recent hour usage"
+            }
+        }
+    }
+}
