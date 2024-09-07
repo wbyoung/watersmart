@@ -118,7 +118,7 @@ def _sensor_data_for_most_recent_hour(data: dict[str, Any]) -> dict[str, Any]:
     record_date = as_local(_from_timestamp(record["read_datetime"]))
 
     return {
-        "state": record["gallons"],
+        "state": _record_gallons(record),
         "attrs": {
             "start": record_date.isoformat(),
             "related": _serialize_records(records),
@@ -131,7 +131,7 @@ def _sensor_data_for_most_recent_full_day(data: dict[str, Any]) -> dict[str, Any
     """Extract data for first full day."""
 
     records = _records_from_first_full_day(data)
-    gallons = sum([r["gallons"] for r in records])
+    gallons = sum([_record_gallons(r) for r in records])
 
     return {
         "state": gallons,
@@ -166,13 +166,22 @@ def _records_from_first_full_day(data):
     return list(reversed(full_day_records))
 
 
+def _record_gallons(record: dict[str, Any]):
+    """Get record gallons guarded to ensure it's a number."""
+
+    result = record["gallons"]
+    if result is None:
+        result = 0
+    return result
+
+
 def _serialize_records(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Convert records for returning in attributes & service calls."""
 
     return [
         {
             "start": as_local(_from_timestamp(record["read_datetime"])).isoformat(),
-            "gallons": record["gallons"],
+            "gallons": _record_gallons(record),
         }
         for record in records
     ]

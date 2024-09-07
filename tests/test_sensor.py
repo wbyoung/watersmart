@@ -62,6 +62,26 @@ async def test_most_recent_hour_sensor(
     assert mock_watersmart_client.async_get_hourly_data.call_count == 1
 
 
+@pytest.fixture
+def client_hourly_data_full_day_with_none(
+    mock_watersmart_client, client_hourly_data_full_day
+):
+    mock_watersmart_client.async_get_hourly_data.return_value[-4]["gallons"] = None
+
+
+@pytest.mark.usefixtures("client_hourly_data_full_day_with_none", "init_integration")
+async def test_most_recent_hour_sensor_with_none_in_data(
+    hass: HomeAssistant, mock_watersmart_client, snapshot: SnapshotAssertion
+):
+    """Test sensor."""
+    recent_day_sensor_state = hass.states.get(
+        "sensor.watersmart_test_gallons_for_most_recent_full_day"
+    )
+
+    assert snapshot == recent_day_sensor_state
+    assert mock_watersmart_client.async_get_hourly_data.call_count == 1
+
+
 @pytest.mark.usefixtures("init_integration")
 async def test_sensors_for_zero_gallons(
     hass: HomeAssistant, mock_watersmart_client, snapshot: SnapshotAssertion
