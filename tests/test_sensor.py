@@ -23,7 +23,7 @@ def client_hourly_data_full_day(mock_watersmart_client):
                 hourly[-1],
                 **{
                     "read_datetime": next_time,
-                    "gallons": gallons,
+                    "gallons": float(gallons),
                 },
             )
         )
