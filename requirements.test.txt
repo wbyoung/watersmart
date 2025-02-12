@@ -4,3 +4,10 @@ pytest==8.3.3
 pytest-cov==5.0.0
 pytest-homeassistant-custom-component==0.13.177
 syrupy==4.7.2
+
+# from acme 3.2.0 setup.py notes:
+#   > Josepy 2+ may introduce backward incompatible changes by dropping usage of
+#   > deprecated PyOpenSSL APIs.
+# since this file pin/freezes dependencies, the value below is the resolved
+# version, but all that's required to be speciried here is `josepy<2`.
+josepy==1.15.0
