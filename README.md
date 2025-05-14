@@ -38,7 +38,7 @@ Open your Home Assistant instance and start setting up by following these steps:
 
 1. Navigate to "Settings" &rarr; "Devices & Services"
 1. Click "+ Add Integration"
-1. Search for and select &rarr; "UI Lovelace Minimalist"
+1. Search for and select &rarr; "WaterSmart"
 
 Or you can use the My Home Assistant Button below.
 
