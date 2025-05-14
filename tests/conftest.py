@@ -1,17 +1,13 @@
 """Fixtures for testing."""
 
-from unittest.mock import AsyncMock, patch, PropertyMock
+import json
 from pathlib import Path
+from typing import Generator
+from unittest.mock import AsyncMock, PropertyMock, patch
 
 from homeassistant.core import HomeAssistant
-
-import json
 import pytest
-from typing import Generator
-
-from pytest_homeassistant_custom_component.common import (
-    MockConfigEntry,
-)
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.watersmart.client import AuthenticationError
 from custom_components.watersmart.const import DOMAIN

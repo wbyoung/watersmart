@@ -1,13 +1,14 @@
 """Test client."""
 
-import pytest
 from unittest.mock import call
 
 from homeassistant.core import HomeAssistant
+import pytest
+
 from custom_components.watersmart.client import (
     AuthenticationError,
-    WaterSmartClient,
     ScrapeError,
+    WaterSmartClient,
 )
 
 

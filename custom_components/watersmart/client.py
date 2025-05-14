@@ -48,11 +48,11 @@ class WaterSmartClient:
         self._username = username
         self._password = password
         self._session = session or aiohttp.ClientSession()
-        self._account_number = None
-        self._authenticated_at = None
+        self._account_number: str | None = None
+        self._authenticated_at: dt.datetime | None = None
 
     @_authenticated
-    async def async_get_account_number(self) -> str:
+    async def async_get_account_number(self) -> str | None:
         """Authenticate the client."""
 
         return self._account_number

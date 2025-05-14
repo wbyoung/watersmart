@@ -1,13 +1,11 @@
 """Test sensor for simple integration."""
 
+import datetime as dt
+
 from homeassistant.core import HomeAssistant
 from homeassistant.util.dt import utcnow
-
-import datetime as dt
 import pytest
-from pytest_homeassistant_custom_component.common import (
-    async_fire_time_changed,
-)
+from pytest_homeassistant_custom_component.common import async_fire_time_changed
 from syrupy.assertion import SnapshotAssertion
 
 

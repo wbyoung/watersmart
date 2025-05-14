@@ -2,9 +2,7 @@
 
 from datetime import date, datetime
 from functools import partial
-from typing import Final
-
-import voluptuous as vol
+from typing import Final, cast
 
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.core import (
@@ -17,6 +15,7 @@ from homeassistant.core import (
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import selector
 from homeassistant.util import dt
+import voluptuous as vol
 
 from .const import DOMAIN
 from .coordinator import (
@@ -53,10 +52,10 @@ def __get_date(date_input: str | int | None) -> date | datetime | None:
         return None
 
     if isinstance(date_input, int) and (value := dt.utc_from_timestamp(date_input)):
-        return value
+        return cast(datetime, value)
 
     if isinstance(date_input, str) and (value := dt.parse_datetime(date_input)):
-        return value
+        return cast(datetime, value)
 
     raise ServiceValidationError(
         translation_domain=DOMAIN,

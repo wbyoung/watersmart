@@ -1,14 +1,12 @@
 """The WaterSmart coordinator."""
 
 from asyncio import timeout
-from collections.abc import Callable
 import datetime as dt
 import functools
 import logging
-from typing import Any
+from typing import Any, Callable, Protocol, cast
 
 from aiohttp.client_exceptions import ClientConnectorError
-
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
@@ -23,17 +21,21 @@ from .const import (
     MANUFACTURER,
 )
 
-type DataConverter = Callable[[dict[str, Any]], dict[str, Any]]
-
 EXCEPTIONS = (AuthenticationError, ClientConnectorError)
 
 _LOGGER = logging.getLogger(__name__)
 
 
+class _DataConverterT(Protocol):
+    converter_key: str
+
+    def __call__(self, data: dict[str, Any]) -> dict[str, Any]: ...  # pragma no cover
+
+
 class WaterSmartUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     """Class to manage fetching AccuWeather data API."""
 
-    data_converters: tuple[DataConverter, ...] = ()
+    data_converters: tuple[_DataConverterT, ...] = ()
 
     def __init__(
         self,
@@ -61,7 +63,7 @@ class WaterSmartUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             _sensor_data_for_most_recent_full_day,
         )
 
-    async def _async_update_data(self) -> list[dict[str, Any]]:
+    async def _async_update_data(self) -> dict[str, dict[str, Any]]:
         """Update data via library."""
         try:
             async with timeout(30):
@@ -95,16 +97,21 @@ def _from_timestamp(timestamp: int):
     )
 
 
+class _DataConverter:
+    def __init__(self, key: str, func: Callable[[dict[str, Any]], dict[str, Any]]):
+        super().__init__()
+        self.converter_key = key
+        self.func = func
+
+    def __call__(self, data):
+        return self.func(data)
+
+
 def _data_converter(key: str):
     """Annotate and add a converter key to data converters."""
 
-    def wrapper(func):
-        @functools.wraps(func)
-        def wrapped(*args, **kwargs):
-            return func(*args, **kwargs)
-
-        wrapped.converter_key = key
-        return wrapped
+    def wrapper(func) -> _DataConverterT:
+        return cast(_DataConverter, functools.wraps(func)(_DataConverter(key, func)))
 
     return wrapper
 

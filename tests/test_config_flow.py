@@ -4,8 +4,10 @@ from unittest.mock import patch
 
 from homeassistant import config_entries, setup
 from homeassistant.core import HomeAssistant
-from custom_components.watersmart.const import DOMAIN
+import pytest
+
 from custom_components.watersmart.client import AuthenticationError
+from custom_components.watersmart.const import DOMAIN
 
 
 async def test_successful_flow(hass: HomeAssistant, mock_watersmart_client):
@@ -42,86 +44,36 @@ async def test_successful_flow(hass: HomeAssistant, mock_watersmart_client):
     assert len(mock_setup_entry.mock_calls) == 1
 
 
-async def test_client_timeout(hass: HomeAssistant, mock_watersmart_client):
-    """Test we get the form."""
-
-    mock_watersmart_client.async_get_account_number.side_effect = TimeoutError(
-        "timeout"
-    )
-
-    await setup.async_setup_component(hass, "persistent_notification", {})
-    result = await hass.config_entries.flow.async_init(
-        DOMAIN, context={"source": config_entries.SOURCE_USER}
-    )
-    assert result["type"] == "form"
-    assert result["errors"] == {}
-
-    with patch(
-        "custom_components.watersmart.async_setup_entry",
-        return_value=True,
-    ) as mock_setup_entry:
-        configured_result = await hass.config_entries.flow.async_configure(
-            result["flow_id"],
+@pytest.mark.parametrize(
+    ("side_effect", "expected_errors"),
+    [
+        (None, {"base": "invalid_auth"}),
+        (TimeoutError("timeout"), {"base": "cannot_connect"}),
+        (
+            AuthenticationError("invalid credentials"),
             {
-                "host": "test",
-                "username": "test@home-assistant.io",
-                "password": "Passw0rd",
+                "base": "invalid_auth",
             },
-        )
-
-    assert "title" not in configured_result
-    assert "data" not in configured_result
-
-    assert configured_result["type"] == "form"
-    assert configured_result["errors"] == {
-        "base": "cannot_connect",
-    }
-    await hass.async_block_till_done()
-    assert len(mock_setup_entry.mock_calls) == 0
-
-
-async def test_auth_error(hass: HomeAssistant, mock_watersmart_client):
-    """Test we get the form."""
-
-    mock_watersmart_client.async_get_account_number.side_effect = AuthenticationError(
-        "invalid credentials"
-    )
-
-    await setup.async_setup_component(hass, "persistent_notification", {})
-    result = await hass.config_entries.flow.async_init(
-        DOMAIN, context={"source": config_entries.SOURCE_USER}
-    )
-    assert result["type"] == "form"
-    assert result["errors"] == {}
-
-    with patch(
-        "custom_components.watersmart.async_setup_entry",
-        return_value=True,
-    ) as mock_setup_entry:
-        configured_result = await hass.config_entries.flow.async_configure(
-            result["flow_id"],
+        ),
+        (
+            Exception("unknown error"),
             {
-                "host": "test",
-                "username": "test@home-assistant.io",
-                "password": "Passw0rd",
+                "base": "unknown",
             },
-        )
-
-    assert "title" not in configured_result
-    assert "data" not in configured_result
-
-    assert configured_result["type"] == "form"
-    assert configured_result["errors"] == {
-        "base": "invalid_auth",
-    }
-    await hass.async_block_till_done()
-    assert len(mock_setup_entry.mock_calls) == 0
-
-
-async def test_no_account_number(hass: HomeAssistant, mock_watersmart_client):
+        ),
+    ],
+    ids=["no_account_number", "client_timeout", "auth_error", "unknown_error"],
+)
+async def test_error(
+    hass: HomeAssistant,
+    mock_watersmart_client,
+    side_effect,
+    expected_errors,
+):
     """Test we get the form."""
 
     mock_watersmart_client.async_get_account_number.return_value = None
+    mock_watersmart_client.async_get_account_number.side_effect = side_effect
 
     await setup.async_setup_component(hass, "persistent_notification", {})
     result = await hass.config_entries.flow.async_init(
@@ -147,8 +99,6 @@ async def test_no_account_number(hass: HomeAssistant, mock_watersmart_client):
     assert "data" not in configured_result
 
     assert configured_result["type"] == "form"
-    assert configured_result["errors"] == {
-        "base": "invalid_auth",
-    }
+    assert configured_result["errors"] == expected_errors
     await hass.async_block_till_done()
     assert len(mock_setup_entry.mock_calls) == 0

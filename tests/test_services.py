@@ -1,14 +1,13 @@
 """Test services for WaterSmart integration."""
 
 import re
-
-import pytest
-
-from syrupy.assertion import SnapshotAssertion
-import voluptuous as vol
+from typing import cast
 
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ServiceValidationError
+import pytest
+from syrupy.assertion import SnapshotAssertion
+import voluptuous as vol
 
 from custom_components.watersmart.const import DOMAIN
 from custom_components.watersmart.services import (
@@ -87,7 +86,7 @@ def config_entry_data(
     if "config_entry" in request.param and request.param["config_entry"] is True:
         return {"config_entry": mock_config_entry.entry_id}
 
-    return request.param
+    return cast(dict[str, str], request.param)
 
 
 @pytest.mark.usefixtures("init_integration")

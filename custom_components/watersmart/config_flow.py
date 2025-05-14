@@ -8,13 +8,12 @@ from typing import Any
 
 from aiohttp import ClientError
 from aiohttp.client_exceptions import ClientConnectorError
-import voluptuous as vol
-
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+import voluptuous as vol
 
 from .client import AuthenticationError, WaterSmartClient
 from .const import DOMAIN
@@ -55,7 +54,7 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     return {"title": f"{data[CONF_HOST]} ({data[CONF_USERNAME]})"}
 
 
-class WaterSmartConfigFlow(ConfigFlow, domain=DOMAIN):
+class WaterSmartConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg]
     """Handle a config flow for WaterSmart."""
 
     VERSION = 1
