@@ -33,7 +33,7 @@ class _DataConverterT(Protocol):
 
 
 class WaterSmartUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
-    """Class to manage fetching AccuWeather data API."""
+    """Class to manage fetching Watersmart data."""
 
     data_converters: tuple[_DataConverterT, ...] = ()
 
