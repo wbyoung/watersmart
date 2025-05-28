@@ -1,4 +1,6 @@
 {
+  "filename": "watersmart.zip",
   "name": "WaterSmart",
-  "render_readme": true
+  "render_readme": true,
+  "zip_release": true
 }
