@@ -1,8 +1,9 @@
 """Fixtures for testing."""
 
+from collections.abc import Generator
 import json
 from pathlib import Path
-from typing import Generator
+from typing import Any
 from unittest.mock import AsyncMock, PropertyMock, patch
 
 from homeassistant.core import HomeAssistant
@@ -57,7 +58,14 @@ def auto_enable_custom_integrations(enable_custom_integrations):
 
 
 class MockAiohttpResponse:
-    def __init__(self, text="", json={}, status=200):
+    def __init__(
+        self,
+        text: str = "",  # noqa: ARG002
+        json: dict[str, Any] | None = None,
+        status: int = 200,  # noqa: ARG002
+    ):
+        if json is None:
+            json = {}
         self.text = AsyncMock(return_value="", spec="aiohttp.ClientResponse.text")
 
     async def json(self):
@@ -65,7 +73,7 @@ class MockAiohttpResponse:
 
 
 @pytest.fixture
-def mock_aiohttp_session() -> Generator[dict[str, AsyncMock], None, None]:
+def mock_aiohttp_session() -> Generator[dict[str, AsyncMock]]:
     with patch("aiohttp.ClientSession", autospec=True) as mock_session:
         session = mock_session.return_value
         session.get = AsyncMock(
@@ -91,7 +99,7 @@ def mock_aiohttp_session() -> Generator[dict[str, AsyncMock], None, None]:
 
 
 @pytest.fixture
-def mock_watersmart_client(fixture_loader) -> Generator[AsyncMock, None, None]:
+def mock_watersmart_client(fixture_loader) -> Generator[AsyncMock]:
     """Mock a WaterSmart client."""
 
     hourly_data = fixture_loader.realtime_api_response_obj["data"]["series"]
@@ -123,12 +131,12 @@ def mock_watersmart_client(fixture_loader) -> Generator[AsyncMock, None, None]:
 @pytest.fixture
 def client_authentication_error(mock_watersmart_client):
     mock_watersmart_client.async_get_hourly_data.side_effect = AuthenticationError(
-        "invalid credentials"
+        ["invalid credentials"]
     )
 
 
 @pytest.fixture
-def mock_sensor_name() -> Generator[PropertyMock, None, None]:
+def mock_sensor_name() -> Generator[PropertyMock]:
     """Mock sensor names.
 
     This testing setup/library does not use `strings.json` and the entity description to translation key
@@ -170,8 +178,8 @@ def mock_config_entry() -> MockConfigEntry:
 async def init_integration(
     hass: HomeAssistant,
     mock_config_entry: MockConfigEntry,
-    mock_sensor_name: Generator[PropertyMock, None, None],
-    mock_watersmart_client: Generator[AsyncMock, None, None],
+    mock_sensor_name: Generator[PropertyMock],
+    mock_watersmart_client: Generator[AsyncMock],
 ) -> MockConfigEntry:
     """Set up the WaterSmart integration for testing."""
 

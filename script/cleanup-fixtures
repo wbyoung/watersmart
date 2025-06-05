@@ -1,19 +1,20 @@
 #!/usr/bin/env python
 
+"""Cleanup fixtures."""
+
 import json
 from pathlib import Path
+from typing import Any, Final
 
-from bs4 import BeautifulSoup, NavigableString
+from bs4 import BeautifulSoup, NavigableString, PageElement
 
 
 class JSONResponseAnonymizer:
     """JSON response anonymizer to shorten and prettify response object."""
 
-    FIXTURES = [
-        "realtime_api_response.json",
-    ]
+    FIXTURES: Final = ("realtime_api_response.json",)
 
-    def run(self):
+    def run(self) -> None:
         for fixture in self.FIXTURES:
             path = Path(__file__).parent.parent.joinpath("tests/fixtures", fixture)
             text = path.read_text()
@@ -22,7 +23,8 @@ class JSONResponseAnonymizer:
             text = json.dumps(obj, indent=4)
             path.write_text(text)
 
-    def _shorten(self, obj):
+    @classmethod
+    def _shorten(cls, obj: dict[str, Any]) -> dict[str, Any]:
         obj["data"]["series"] = obj["data"]["series"][-4:]
 
         return obj
@@ -31,12 +33,12 @@ class JSONResponseAnonymizer:
 class WebPageAnonymizer:
     """Web page anonymizer to remove personal info, shorten, and prettify."""
 
-    FIXTURES = [
+    FIXTURES: Final = (
         "login_success.html",
         "login_error.html",
-    ]
+    )
 
-    def run(self):
+    def run(self) -> None:
         for fixture in self.FIXTURES:
             path = Path(__file__).parent.parent.joinpath("tests/fixtures", fixture)
             html = path.read_text()
@@ -44,7 +46,7 @@ class WebPageAnonymizer:
             account = soup.find(id="account-navigation")
 
             if account:
-                address = account.find(lambda tag: tag.get("notranslate") == "")
+                address = account.find(lambda tag: not tag.get("notranslate"))
                 address.string = " 123 N Main St,\n   Bend OR 97701"
                 account_number = soup.find("var")
                 account_number.string = "1234567-8900"
@@ -53,21 +55,23 @@ class WebPageAnonymizer:
 
             path.write_text(soup.prettify())
 
-    def _shorten(self, doc):
+    @classmethod
+    def _shorten(cls, doc: PageElement) -> PageElement:
         stack = [doc]
 
-        while len(stack):
+        while stack:
             node = stack.pop()
 
-            if self._contains_target(node) or self._is_target(node):
-                if not self._is_target(node):
+            if cls._contains_target(node) or cls._is_target(node):
+                if not cls._is_target(node):
                     stack.extend(node.contents)
             else:
                 node.extract()
 
         return doc
 
-    def _contains_target(self, node):
+    @classmethod
+    def _contains_target(cls, node: PageElement) -> bool:
         is_string = isinstance(node, NavigableString)
         has_account = False
         has_errors = False
@@ -78,7 +82,8 @@ class WebPageAnonymizer:
 
         return has_account or has_errors
 
-    def _is_target(self, node):
+    @classmethod
+    def _is_target(cls, node: PageElement) -> bool:
         is_string = isinstance(node, NavigableString)
         is_account = False
         is_errors = False
@@ -90,7 +95,7 @@ class WebPageAnonymizer:
         return is_account or is_errors
 
 
-def main():
+def main() -> None:
     WebPageAnonymizer().run()
     JSONResponseAnonymizer().run()
 

@@ -14,7 +14,7 @@ from homeassistant.core import (
 )
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import selector
-from homeassistant.util import dt
+from homeassistant.util import dt as dt_util
 import voluptuous as vol
 
 from .const import DOMAIN
@@ -46,16 +46,25 @@ SERVICE_SCHEMA: Final = vol.Schema(
 
 
 def __get_date(date_input: str | int | None) -> date | datetime | None:
-    """Get date."""
+    """Get date.
+
+    Returns:
+        The date from the input.
+
+    Raises:
+        ServiceValidationError: When the date is not valid.
+    """
 
     if not date_input:
         return None
 
-    if isinstance(date_input, int) and (value := dt.utc_from_timestamp(date_input)):
-        return cast(datetime, value)
+    if isinstance(date_input, int) and (
+        value := dt_util.utc_from_timestamp(date_input)
+    ):
+        return cast("datetime", value)
 
-    if isinstance(date_input, str) and (value := dt.parse_datetime(date_input)):
-        return cast(datetime, value)
+    if isinstance(date_input, str) and (value := dt_util.parse_datetime(date_input)):
+        return cast("datetime", value)
 
     raise ServiceValidationError(
         translation_domain=DOMAIN,
@@ -69,7 +78,14 @@ def __get_date(date_input: str | int | None) -> date | datetime | None:
 def __get_coordinator(
     hass: HomeAssistant, call: ServiceCall
 ) -> WaterSmartUpdateCoordinator:
-    """Get the coordinator from the entry."""
+    """Get the coordinator from the entry.
+
+    Returns:
+        The update coordinator.
+
+    Raises:
+        ServiceValidationError: When the entry is not valid.
+    """
 
     entry_id: str = call.data[ATTR_CONFIG_ENTRY]
     entry: ConfigEntry | None = hass.config_entries.async_get_entry(entry_id)
@@ -115,10 +131,10 @@ async def __get_hourly_history(
     for record in coordinator.data["hourly"]:
         record_date = _from_timestamp(record["read_datetime"])
 
-        if start and dt.as_local(record_date) < dt.as_local(start):
+        if start and dt_util.as_local(record_date) < dt_util.as_local(start):
             continue
 
-        if end and dt.as_local(record_date) > dt.as_local(end):
+        if end and dt_util.as_local(record_date) > dt_util.as_local(end):
             continue
 
         records.append(record)

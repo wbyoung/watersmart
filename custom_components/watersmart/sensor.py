@@ -1,7 +1,5 @@
 """Support for the WaterSmart service."""
 
-from __future__ import annotations
-
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any, cast
@@ -17,33 +15,30 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import WaterSmartConfigEntry
-from .const import (
-    ATTRIBUTION,
-    GALLONS_FOR_MOST_RECENT_FULL_DAY_KEY,
-    GALLONS_FOR_MOST_RECENT_HOUR,
-)
-from .coordinator import WaterSmartUpdateCoordinator
+from .const import ATTRIBUTION, SensorKey
+from .coordinator import CoordinatorData, WaterSmartUpdateCoordinator
+from .types import SensorData
 
 
 @dataclass(frozen=True, kw_only=True)
 class WaterSmartSensorDescription(SensorEntityDescription):
     """Class describing WaterSmart sensor entities."""
 
-    value_fn: Callable[[dict[str, Any]], str | int | float | None]
+    value_fn: Callable[[SensorData], str | int | float | None]
     attr_fn: Callable[[dict[str, Any]], dict[str, Any]] = lambda attrs: attrs
 
 
 SENSOR_TYPES: tuple[WaterSmartSensorDescription, ...] = (
     WaterSmartSensorDescription(
-        key=GALLONS_FOR_MOST_RECENT_HOUR,
-        value_fn=lambda data: cast(float, data),
+        key=SensorKey.GALLONS_FOR_MOST_RECENT_HOUR,
+        value_fn=lambda data: cast("float", data),
         device_class=SensorDeviceClass.WATER,
         native_unit_of_measurement=UnitOfVolume.GALLONS,
         translation_key="gallons_for_most_recent_hour",
     ),
     WaterSmartSensorDescription(
-        key=GALLONS_FOR_MOST_RECENT_FULL_DAY_KEY,
-        value_fn=lambda data: cast(float, data),
+        key=SensorKey.GALLONS_FOR_MOST_RECENT_FULL_DAY_KEY,
+        value_fn=lambda data: cast("float", data),
         device_class=SensorDeviceClass.WATER,
         native_unit_of_measurement=UnitOfVolume.GALLONS,
         translation_key="gallons_for_most_recent_full_day",
@@ -51,8 +46,8 @@ SENSOR_TYPES: tuple[WaterSmartSensorDescription, ...] = (
 )
 
 
-async def async_setup_entry(
-    hass: HomeAssistant,
+async def async_setup_entry(  # noqa: RUF029
+    hass: HomeAssistant,  # noqa: ARG001
     entry: WaterSmartConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
@@ -109,8 +104,12 @@ class WaterSmartSensor(CoordinatorEntity[WaterSmartUpdateCoordinator], SensorEnt
 
     @staticmethod
     def _get_sensor_data(
-        coordinator_data: dict[str, Any],
-        kind: str,
-    ) -> Any:
-        """Get sensor data."""
-        return coordinator_data[kind]
+        coordinator_data: CoordinatorData,
+        kind: SensorKey,
+    ) -> SensorData:
+        """Get sensor data.
+
+        Returns:
+            The actual sensor data.
+        """
+        return cast("dict[str, SensorData]", coordinator_data)[kind]

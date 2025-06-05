@@ -18,7 +18,9 @@ async def test_login_success(hass: HomeAssistant, mock_aiohttp_session, fixture_
     )
 
     client = WaterSmartClient(
-        hostname="test", username="test@home-assistant.io", password="Passw0rd"
+        hostname="test",
+        username="test@home-assistant.io",
+        password="Passw0rd",  # noqa: S106
     )
 
     await client.async_get_account_number()
@@ -45,7 +47,9 @@ async def test_login_is_preserved(
     )
 
     client = WaterSmartClient(
-        hostname="test", username="test@home-assistant.io", password="Passw0rd"
+        hostname="test",
+        username="test@home-assistant.io",
+        password="Passw0rd",  # noqa: S106
     )
 
     await client.async_get_account_number()
@@ -60,7 +64,9 @@ async def test_login_failure(hass: HomeAssistant, mock_aiohttp_session, fixture_
     )
 
     client = WaterSmartClient(
-        hostname="test", username="test@home-assistant.io", password="Passw0rd"
+        hostname="test",
+        username="test@home-assistant.io",
+        password="Passw0rd",  # noqa: S106
     )
 
     with pytest.raises(AuthenticationError):
@@ -75,7 +81,9 @@ async def test_structure_change_failure(
     )
 
     client = WaterSmartClient(
-        hostname="test", username="test@home-assistant.io", password="Passw0rd"
+        hostname="test",
+        username="test@home-assistant.io",
+        password="Passw0rd",  # noqa: S106
     )
 
     with pytest.raises(ScrapeError):
@@ -90,7 +98,9 @@ async def test_async_get_account_number(
     )
 
     client = WaterSmartClient(
-        hostname="test", username="test@home-assistant.io", password="Passw0rd"
+        hostname="test",
+        username="test@home-assistant.io",
+        password="Passw0rd",  # noqa: S106
     )
     account_number = await client.async_get_account_number()
 
@@ -105,7 +115,9 @@ async def test_account_number_unmatchable(
     )
 
     client = WaterSmartClient(
-        hostname="test", username="test@home-assistant.io", password="Passw0rd"
+        hostname="test",
+        username="test@home-assistant.io",
+        password="Passw0rd",  # noqa: S106
     )
 
     account_number = await client.async_get_account_number()

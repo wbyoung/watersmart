@@ -2,35 +2,62 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 import datetime as dt
 import functools
 import re
+from typing import Any, TypedDict, cast
 
 import aiohttp
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, PageElement
 
 ACCOUNT_NUMBER_RE = re.compile(r"^[\d-]+$")
 
 
-def _authenticated(func):
+def _authenticated[F: Callable[..., Any], ReturnT](func: F) -> F:
     @functools.wraps(func)
-    async def _pre_authenticate(self, *args, **kwargs):
+    async def _pre_authenticate(
+        self: WaterSmartClient,
+        *args,  # noqa: ANN002
+        **kwargs,  # noqa: ANN003
+    ) -> ReturnT:
         await self._authenticate_if_needed()
-        return await func(self, *args, **kwargs)
+        return cast("ReturnT", await func(self, *args, **kwargs))
 
-    return _pre_authenticate
+    return cast("F", _pre_authenticate)
 
 
 class AuthenticationError(Exception):
     """Authentication Error."""
 
-    def __init__(self, errors=None) -> None:
+    def __init__(self, errors: list[str] | None = None) -> None:
         """Initialize."""
         self._errors = errors
 
 
 class ScrapeError(Exception):
     """Scrape Error."""
+
+
+class UsageHistoryPayload(TypedDict):
+    """UsageHistoryPayload class."""
+
+    data: UsageHistory
+
+
+class UsageHistory(TypedDict):
+    """UsageHistory class."""
+
+    series: list[UsageRecord]
+
+
+class UsageRecord(TypedDict):
+    """UsageRecord class."""
+
+    read_datetime: int
+    gallons: float | None
+    leak_gallons: int | None
+    flags: None
 
 
 class WaterSmartClient:
@@ -53,31 +80,37 @@ class WaterSmartClient:
 
     @_authenticated
     async def async_get_account_number(self) -> str | None:
-        """Authenticate the client."""
+        """Authenticate the client.
+
+        Returns:
+            The account number.
+        """
 
         return self._account_number
 
     @_authenticated
-    async def async_get_hourly_data(self):
-        """Get hourly water usage data."""
+    async def async_get_hourly_data(self) -> list[UsageRecord]:
+        """Get hourly water usage data.
+
+        Returns:
+            The objects in the response data.
+        """
 
         session = self._session
         hostname = self._hostname
         response = await session.get(
             f"https://{hostname}.watersmart.com/index.php/rest/v1/Chart/RealTimeChart"
         )
-        response_json = await response.json()
-        data = response_json["data"]
+        response_json: UsageHistoryPayload = await response.json()
 
-        return data["series"]
+        return response_json["data"]["series"]
 
     async def _authenticate_if_needed(self) -> None:
-        if (
-            not self._authenticated_at
-            or self._authenticated_at < dt.datetime.now() - dt.timedelta(minutes=10)
-        ):
+        if not self._authenticated_at or self._authenticated_at < dt.datetime.now(
+            tz=dt.UTC
+        ) - dt.timedelta(minutes=10):
             await self._authenticate()
-        self._authenticated_at = dt.datetime.now()
+        self._authenticated_at = dt.datetime.now(tz=dt.UTC)
 
     async def _authenticate(self) -> None:
         session = self._session
@@ -116,7 +149,7 @@ class WaterSmartClient:
         self._account_number = account_number
 
 
-def _assert_node(node, message):
+def _assert_node(node: PageElement, message: str) -> PageElement:
     if not node:
         raise ScrapeError(message)
     return node

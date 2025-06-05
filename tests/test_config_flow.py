@@ -50,7 +50,7 @@ async def test_successful_flow(hass: HomeAssistant, mock_watersmart_client):
         (None, {"base": "invalid_auth"}),
         (TimeoutError("timeout"), {"base": "cannot_connect"}),
         (
-            AuthenticationError("invalid credentials"),
+            AuthenticationError(["invalid credentials"]),
             {
                 "base": "invalid_auth",
             },

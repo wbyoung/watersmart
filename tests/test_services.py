@@ -19,7 +19,7 @@ from .conftest import MockConfigEntry
 
 
 @pytest.mark.usefixtures("init_integration")
-async def test_has_services(
+def test_has_services(
     hass: HomeAssistant,
 ) -> None:
     """Test the existence of the WaterSmart Service."""
@@ -86,7 +86,7 @@ def config_entry_data(
     if "config_entry" in request.param and request.param["config_entry"] is True:
         return {"config_entry": mock_config_entry.entry_id}
 
-    return cast(dict[str, str], request.param)
+    return cast("dict[str, str]", request.param)
 
 
 @pytest.mark.usefixtures("init_integration")

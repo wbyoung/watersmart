@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any, TypedDict
 
 from homeassistant.config_entries import ConfigEntry
 
-from .coordinator import WaterSmartUpdateCoordinator
+from . import coordinator as cdn
 
 type WaterSmartConfigEntry = ConfigEntry[WaterSmartData]
 
@@ -15,4 +16,11 @@ type WaterSmartConfigEntry = ConfigEntry[WaterSmartData]
 class WaterSmartData:
     """Runtime data definition."""
 
-    coordinator: WaterSmartUpdateCoordinator
+    coordinator: cdn.WaterSmartUpdateCoordinator
+
+
+class SensorData(TypedDict):
+    """Shape of data stored on coordinator for individual sensors."""
+
+    state: Any
+    attrs: dict[str, Any]

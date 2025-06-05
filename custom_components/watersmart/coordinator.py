@@ -1,10 +1,11 @@
 """The WaterSmart coordinator."""
 
 from asyncio import timeout
+from collections.abc import Callable
 import datetime as dt
 import functools
 import logging
-from typing import Any, Callable, Protocol, cast
+from typing import Any, Protocol, TypedDict, cast
 
 from aiohttp.client_exceptions import ClientConnectorError
 from homeassistant.core import HomeAssistant
@@ -12,27 +13,30 @@ from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util.dt import as_local, get_default_time_zone, start_of_local_day
 
-from .client import AuthenticationError, WaterSmartClient
-from .const import (
-    DEFAULT_SCAN_INTERVAL,
-    DOMAIN,
-    GALLONS_FOR_MOST_RECENT_FULL_DAY_KEY,
-    GALLONS_FOR_MOST_RECENT_HOUR,
-    MANUFACTURER,
-)
+from .client import AuthenticationError, UsageRecord, WaterSmartClient
+from .const import DEFAULT_SCAN_INTERVAL, DOMAIN, MANUFACTURER, SensorKey
+from .types import SensorData
 
 EXCEPTIONS = (AuthenticationError, ClientConnectorError)
 
 _LOGGER = logging.getLogger(__name__)
 
 
+class CoordinatorData(TypedDict, total=False):
+    """Shape of coordinator data."""
+
+    gallons_for_most_recent_hour: SensorData
+    gallons_for_most_recent_full_day: SensorData
+    hourly: list[UsageRecord]
+
+
 class _DataConverterT(Protocol):
-    converter_key: str
+    converter_key: SensorKey
 
-    def __call__(self, data: dict[str, Any]) -> dict[str, Any]: ...  # pragma no cover
+    def __call__(self, data: CoordinatorData) -> SensorData: ...  # pragma no cover
 
 
-class WaterSmartUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
+class WaterSmartUpdateCoordinator(DataUpdateCoordinator[CoordinatorData]):
     """Class to manage fetching Watersmart data."""
 
     data_converters: tuple[_DataConverterT, ...] = ()
@@ -43,7 +47,6 @@ class WaterSmartUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         watersmart: WaterSmartClient,
         hostname: str,
         username: str,
-        password: str,
     ) -> None:
         """Initialize."""
 
@@ -58,23 +61,33 @@ class WaterSmartUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.hostname = hostname
         self.username = username
         self.device_info = _get_device_info(hostname, username)
+        self.data: CoordinatorData = {}
         self.data_converters = (
             _sensor_data_for_most_recent_hour,
             _sensor_data_for_most_recent_full_day,
         )
 
-    async def _async_update_data(self) -> dict[str, dict[str, Any]]:
-        """Update data via library."""
+    async def _async_update_data(self) -> CoordinatorData:
+        """Update data via library.
+
+        Returns:
+            The updated data.
+
+        Raises:
+            UpdateFailed: If there is an error that could typically occur.
+        """
         try:
             async with timeout(30):
-                result = {
+                result: CoordinatorData = {
                     "hourly": await self.watersmart.async_get_hourly_data(),
                 }
         except EXCEPTIONS as error:
             raise UpdateFailed(error) from error
 
         for converter in self.data_converters:
-            result[converter.converter_key] = converter(result)
+            cast("dict[str, SensorData]", result)[converter.converter_key] = converter(
+                result
+            )
 
         _LOGGER.debug("Async update complete")
 
@@ -82,7 +95,11 @@ class WaterSmartUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
 
 def _get_device_info(hostname: str, username: str) -> DeviceInfo:
-    """Get device info."""
+    """Get device info.
+
+    Returns:
+        The device info.
+    """
     return DeviceInfo(
         entry_type=DeviceEntryType.SERVICE,
         identifiers={(DOMAIN, f"{hostname}-{username}")},
@@ -91,34 +108,51 @@ def _get_device_info(hostname: str, username: str) -> DeviceInfo:
     )
 
 
-def _from_timestamp(timestamp: int):
+def _from_timestamp(timestamp: int) -> dt.datetime:
     return dt.datetime.fromtimestamp(timestamp, tz=dt.UTC).replace(
         tzinfo=get_default_time_zone()
     )
 
 
 class _DataConverter:
-    def __init__(self, key: str, func: Callable[[dict[str, Any]], dict[str, Any]]):
+    def __init__(
+        self,
+        key: SensorKey,
+        func: Callable[[CoordinatorData], SensorData],
+    ) -> None:
         super().__init__()
         self.converter_key = key
         self.func = func
 
-    def __call__(self, data):
+    def __call__(self, data: CoordinatorData) -> SensorData:
         return self.func(data)
 
 
-def _data_converter(key: str):
-    """Annotate and add a converter key to data converters."""
+def _data_converter[F: Callable[..., Any]](
+    key: SensorKey,
+) -> Callable[[F], _DataConverterT]:
+    """Annotate and add a converter key to data converters.
 
-    def wrapper(func) -> _DataConverterT:
-        return cast(_DataConverter, functools.wraps(func)(_DataConverter(key, func)))
+    Returns:
+        A decorator.
+    """
+
+    def wrapper(func: F) -> _DataConverterT:
+        return cast(
+            "_DataConverter",
+            functools.wraps(func)(_DataConverter(key, func)),
+        )
 
     return wrapper
 
 
-@_data_converter(GALLONS_FOR_MOST_RECENT_HOUR)
-def _sensor_data_for_most_recent_hour(data: dict[str, Any]) -> dict[str, Any]:
-    """Extract data for most recent hour."""
+@_data_converter(SensorKey.GALLONS_FOR_MOST_RECENT_HOUR)
+def _sensor_data_for_most_recent_hour(data: CoordinatorData) -> SensorData:
+    """Extract data for most recent hour.
+
+    Returns:
+        The extracted & converted records.
+    """
 
     records = data["hourly"][-24:]
     record = records[-1]
@@ -133,12 +167,16 @@ def _sensor_data_for_most_recent_hour(data: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-@_data_converter(GALLONS_FOR_MOST_RECENT_FULL_DAY_KEY)
-def _sensor_data_for_most_recent_full_day(data: dict[str, Any]) -> dict[str, Any]:
-    """Extract data for first full day."""
+@_data_converter(SensorKey.GALLONS_FOR_MOST_RECENT_FULL_DAY_KEY)
+def _sensor_data_for_most_recent_full_day(data: CoordinatorData) -> SensorData:
+    """Extract data for first full day.
+
+    Returns:
+        The extracted & converted records.
+    """
 
     records = _records_from_first_full_day(data)
-    gallons = sum([_record_gallons(r) for r in records])
+    gallons = sum(_record_gallons(r) for r in records)
 
     return {
         "state": gallons,
@@ -148,8 +186,12 @@ def _sensor_data_for_most_recent_full_day(data: dict[str, Any]) -> dict[str, Any
     }
 
 
-def _records_from_first_full_day(data):
-    """Extract records for first full day."""
+def _records_from_first_full_day(data: CoordinatorData) -> list[UsageRecord]:
+    """Extract records for first full day.
+
+    Returns:
+        The extracted records.
+    """
 
     full_day_records = []
     last_full_day = None
@@ -173,8 +215,12 @@ def _records_from_first_full_day(data):
     return list(reversed(full_day_records))
 
 
-def _record_gallons(record: dict[str, Any]):
-    """Get record gallons guarded to ensure it's a number."""
+def _record_gallons(record: UsageRecord) -> float | int:
+    """Get record gallons guarded to ensure it's a number.
+
+    Returns:
+        The gallons or zero if it was not available.
+    """
 
     result = record["gallons"]
     if result is None:
@@ -182,8 +228,12 @@ def _record_gallons(record: dict[str, Any]):
     return result
 
 
-def _serialize_records(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Convert records for returning in attributes & service calls."""
+def _serialize_records(records: list[UsageRecord]) -> list[dict[str, Any]]:
+    """Convert records for returning in attributes & service calls.
+
+    Returns:
+        The serialized records.
+    """
 
     return [
         {

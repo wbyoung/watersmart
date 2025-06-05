@@ -1,7 +1,5 @@
 """Config flow for WaterSmart integration."""
 
-from __future__ import annotations
-
 from asyncio import timeout
 import logging
 from typing import Any
@@ -33,6 +31,13 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     """Validate the user input allows us to connect.
 
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
+
+    Returns:
+        The details for creating a new config entry.
+
+    Raises:
+        CannotConnect: For connection errors.
+        InvalidAuth: For authentication errors.
     """
 
     session = async_get_clientsession(hass)
@@ -62,7 +67,11 @@ class WaterSmartConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg]
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Handle the initial step."""
+        """Handle the initial step.
+
+        Returns:
+            The config flow result.
+        """
         errors: dict[str, str] = {}
         if user_input is not None:
             try:
