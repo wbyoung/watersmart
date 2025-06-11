@@ -20,15 +20,15 @@ Installation through [HACS][hacs] is the preferred installation method.
 
 1. Go to HACS
 1. Click on Integrations
-1. Search for "WaterSmart" and click "Download this Repository with HACS"
-1. Select the version (it will auto select the latest)
-1. Restart Home Assistant then continue to [the setup section](#setup)
+1. Search for "WaterSmart" &rarr; select it &rarr; press _DOWNLOAD_.
+1. Select the version (it will auto select the latest) &rarr; press _DOWNLOAD_.
+1. Restart Home Assistant then continue to [the setup section](#setup).
 
 ### Manual Download
 
-1. Go to the [release page][releases] and download the `watersmart.zip` attached to the latest
-   release.
-1. Unpack the file and move the folder it contains called `watersmart` to the following
+1. Go to the [release page][releases] and download the `watersmart.zip` attached
+   to the latest release.
+1. Unpack the zip file and move `custom_components/watersmart` to the following
    directory of your Home Assistant configuration: `/config/custom_components/`.
 1. Restart Home Assistant then continue to [the setup section](#setup).
 
