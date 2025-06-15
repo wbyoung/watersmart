@@ -1,6 +1,7 @@
 # WaterSmart for Home Assistant
 
-[![HACS](https://img.shields.io/badge/hacs-default-orange)][hacs-repo]
+[![HACS](https://img.shields.io/badge/default-grey?logo=homeassistantcommunitystore&logoColor=white)][hacs-repo]
+[![HACS installs](https://img.shields.io/github/downloads/wbyoung/watersmart/latest/total?label=installs&color=blue)][hacs-repo]
 [![Version](https://img.shields.io/github/v/release/wbyoung/watersmart)][releases]
 ![Downloads](https://img.shields.io/github/downloads/wbyoung/watersmart/total)
 ![Build](https://img.shields.io/github/actions/workflow/status/wbyoung/watersmart/pytest.yml
