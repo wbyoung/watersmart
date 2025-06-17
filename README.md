@@ -19,9 +19,11 @@ this data continuously._
 
 Installation through [HACS][hacs] is the preferred installation method.
 
-1. Go to HACS
-1. Click on Integrations
-1. Search for "WaterSmart" &rarr; select it &rarr; press _DOWNLOAD_.
+[![Open the WaterSmart integration in HACS][hacs-badge]][hacs-open]
+
+1. Click the button above or go to HACS &rarr; Integrations &rarr; search for
+   "WaterSmart" &rarr; select it.
+1. Press _DOWNLOAD_.
 1. Select the version (it will auto select the latest) &rarr; press _DOWNLOAD_.
 1. Restart Home Assistant then continue to [the setup section](#setup).
 
@@ -97,5 +99,7 @@ Icon designed by [bsd studio][bsd-attribution].
 [config-flow-start]: https://my.home-assistant.io/redirect/config_flow_start/?domain=watersmart
 [hacs]: https://hacs.xyz/
 [hacs-repo]: https://github.com/hacs/integration
+[hacs-badge]: https://my.home-assistant.io/badges/hacs_repository.svg
+[hacs-open]: https://my.home-assistant.io/redirect/hacs_repository/?owner=wbyoung&repository=watersmart&category=integration
 [releases]: https://github.com/wbyoung/watersmart/releases
 [vertexone]: https://www.vertexone.net/
