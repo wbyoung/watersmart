@@ -7,6 +7,7 @@ import pytest
 
 from custom_components.watersmart.client import (
     AuthenticationError,
+    InvalidAccountNumberError,
     ScrapeError,
     WaterSmartClient,
 )
@@ -120,9 +121,8 @@ async def test_account_number_unmatchable(
         password="Passw0rd",  # noqa: S106
     )
 
-    account_number = await client.async_get_account_number()
-
-    assert account_number is None
+    with pytest.raises(InvalidAccountNumberError):
+        await client.async_get_account_number()
 
 
 async def test_async_get_async_get_hourly_data(
