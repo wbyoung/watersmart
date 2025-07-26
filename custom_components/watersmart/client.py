@@ -40,6 +40,7 @@ class AuthenticationError(Exception):
 class InvalidAccountNumberError(Exception):
     """Invalid account number Error."""
 
+
 class ScrapeError(Exception):
     """Scrape Error."""
 
