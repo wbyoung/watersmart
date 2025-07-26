@@ -11,7 +11,9 @@ from typing import Any, TypedDict, cast
 import aiohttp
 from bs4 import BeautifulSoup, PageElement
 
-ACCOUNT_NUMBER_RE = re.compile(r"^[\d-]+$")
+# Account number format will vary between municipality, so
+# match on a string of non-whitespace characters.
+ACCOUNT_NUMBER_RE = re.compile(r"^\S+$")
 
 
 def _authenticated[F: Callable[..., Any], ReturnT](func: F) -> F:
@@ -34,6 +36,9 @@ class AuthenticationError(Exception):
         """Initialize."""
         self._errors = errors
 
+
+class InvalidAccountNumberError(Exception):
+    """Invalid account number Error."""
 
 class ScrapeError(Exception):
     """Scrape Error."""
@@ -144,7 +149,8 @@ class WaterSmartClient:
         account_number = account_section.text.strip()
 
         if not ACCOUNT_NUMBER_RE.match(account_number):
-            account_number = None
+            self._account_number = None
+            raise InvalidAccountNumberError("invalid account number: " + account_number)
 
         self._account_number = account_number
 
