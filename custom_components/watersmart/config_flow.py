@@ -15,6 +15,7 @@ import voluptuous as vol
 
 from .client import AuthenticationError, WaterSmartClient
 from .const import DOMAIN
+from .helpers import parse_hostname
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -41,8 +42,14 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     """
 
     session = async_get_clientsession(hass)
+    hostname, domain = parse_hostname(data[CONF_HOST])
+
     client = WaterSmartClient(
-        data[CONF_HOST], data[CONF_USERNAME], data[CONF_PASSWORD], session=session
+        hostname,
+        data[CONF_USERNAME],
+        data[CONF_PASSWORD],
+        domain=domain,
+        session=session,
     )
 
     try:

@@ -9,6 +9,7 @@ from homeassistant.helpers.typing import ConfigType
 from .client import WaterSmartClient
 from .const import DOMAIN
 from .coordinator import WaterSmartUpdateCoordinator
+from .helpers import parse_hostname
 from .services import async_setup_services
 from .types import WaterSmartConfigEntry, WaterSmartData
 
@@ -38,12 +39,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: WaterSmartConfigEntry) -
         If the setup was successful.
     """
 
-    hostname: str = entry.data[CONF_HOST]
+    hostname, domain = parse_hostname(entry.data[CONF_HOST])
     username: str = entry.data[CONF_USERNAME]
     password: str = entry.data[CONF_PASSWORD]
 
     session = async_get_clientsession(hass)
-    watersmart = WaterSmartClient(hostname, username, password, session=session)
+    watersmart = WaterSmartClient(
+        hostname, username, password, domain=domain, session=session
+    )
 
     coordinator = WaterSmartUpdateCoordinator(
         hass,

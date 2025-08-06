@@ -13,7 +13,10 @@ from custom_components.watersmart.client import (
 )
 
 
-async def test_login_success(hass: HomeAssistant, mock_aiohttp_session, fixture_loader):
+@pytest.mark.parametrize("domain", ["watersmart.com", "bellevuewa.gov"])
+async def test_login_success(
+    hass: HomeAssistant, mock_aiohttp_session, fixture_loader, domain
+):
     mock_aiohttp_session.post.return_value.text.return_value = (
         fixture_loader.login_success_html
     )
@@ -22,6 +25,7 @@ async def test_login_success(hass: HomeAssistant, mock_aiohttp_session, fixture_
         hostname="test",
         username="test@home-assistant.io",
         password="Passw0rd",  # noqa: S106
+        domain=domain,
     )
 
     await client.async_get_account_number()
@@ -29,7 +33,7 @@ async def test_login_success(hass: HomeAssistant, mock_aiohttp_session, fixture_
     mock_aiohttp_session.post.assert_has_calls(
         [
             call(
-                "https://test.watersmart.com/index.php/welcome/login?forceEmail=1",
+                f"https://test.{domain}/index.php/welcome/login?forceEmail=1",
                 data={
                     "token": "",
                     "email": "test@home-assistant.io",

@@ -74,10 +74,12 @@ class WaterSmartClient:
         hostname: str,
         username: str,
         password: str,
+        domain: str | None = None,
         session: aiohttp.ClientSession = None,
     ) -> None:
         """Initialize."""
         self._hostname = hostname
+        self._domain = domain or "watersmart.com"
         self._username = username
         self._password = password
         self._session = session or aiohttp.ClientSession()
@@ -104,8 +106,9 @@ class WaterSmartClient:
 
         session = self._session
         hostname = self._hostname
+        domain = self._domain
         response = await session.get(
-            f"https://{hostname}.watersmart.com/index.php/rest/v1/Chart/RealTimeChart"
+            f"https://{hostname}.{domain}/index.php/rest/v1/Chart/RealTimeChart"
         )
         response_json: UsageHistoryPayload = await response.json()
 
@@ -121,8 +124,9 @@ class WaterSmartClient:
     async def _authenticate(self) -> None:
         session = self._session
         hostname = self._hostname
+        domain = self._domain
         login_response = await session.post(
-            f"https://{hostname}.watersmart.com/index.php/welcome/login?forceEmail=1",
+            f"https://{hostname}.{domain}/index.php/welcome/login?forceEmail=1",
             data={
                 "token": "",
                 "email": self._username,
