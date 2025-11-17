@@ -131,6 +131,27 @@ class WaterSmartClient:
         )
         login_response_text = await login_response.text()
         soup = BeautifulSoup(login_response_text, "html.parser")
+
+        login_refresh_token_node = soup.find("input", {"name": "loginRefreshToken"})
+        login_refresh_token = (
+            login_refresh_token_node.get("value", "")
+            if login_refresh_token_node
+            else None
+        )
+
+        if login_refresh_token:
+            login_response = await session.post(
+                f"https://{hostname}.watersmart.com/index.php/welcome/login?forceEmail=1",
+                data={
+                    "token": "",
+                    "loginRefreshToken": login_refresh_token,
+                    "email": self._username,
+                    "password": self._password,
+                },
+            )
+            login_response_text = await login_response.text()
+            soup = BeautifulSoup(login_response_text, "html.parser")
+
         errors = [error.text.strip() for error in soup.select(".error-message")]
         errors = [error for error in errors if error]
 

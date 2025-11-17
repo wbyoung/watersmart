@@ -1,0 +1,33 @@
+<html>
+  <body class="desktop landing unknown">
+    <div class="outer-container">
+      <div class="content">
+        <div class="landing-widgets standard">
+          <div class="main-widget">
+            <div class="auth">
+              <form action="/index.php/welcome/login?forceEmail=1" method="post" id="loginForm">
+                <input type="hidden" name="loginRefreshToken" value="12.34 56.78" />
+                <input type="hidden" name="token" value="" />
+                <div class="error-message">
+                </div>
+                <ul class="inputs special-focus bottom-owns-border">
+                  <li class="ui input ">
+                    <input type="email" name="email" placeholder="Email address" value="" hint="" maxlength="200"></input>
+                  </li>
+                  <li class="ui input ">
+                    <input type="password" name="password" id="" placeholder="Password"></input>
+                  </li>
+                </ul>
+
+                <div>
+                  <input type="submit" class="standard-button full highlight" value="Log in" id="loginSubmit">
+                  </input>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

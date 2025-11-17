@@ -1,6 +1,6 @@
 """Test client."""
 
-from unittest.mock import call
+from unittest.mock import AsyncMock, call
 
 from homeassistant.core import HomeAssistant
 import pytest
@@ -32,6 +32,52 @@ async def test_login_success(hass: HomeAssistant, mock_aiohttp_session, fixture_
                 "https://test.watersmart.com/index.php/welcome/login?forceEmail=1",
                 data={
                     "token": "",
+                    "email": "test@home-assistant.io",
+                    "password": "Passw0rd",
+                },
+            ),
+        ]
+    )
+
+
+async def test_login_success_with_refreshtoken(
+    hass: HomeAssistant, mock_aiohttp_session, fixture_loader
+):
+    resp1 = AsyncMock()
+    resp1.text.return_value = fixture_loader.login_refreshtoken_html
+    resp2 = AsyncMock()
+    resp2.text.return_value = fixture_loader.login_success_html
+    mock_aiohttp_session.post.side_effect = [resp1, resp2]
+
+    client = WaterSmartClient(
+        hostname="test",
+        username="test@home-assistant.io",
+        password="Passw0rd",  # noqa: S106
+    )
+
+    await client.async_get_account_number()
+
+    assert mock_aiohttp_session.post.call_count == 2
+
+    mock_aiohttp_session.post.assert_has_calls(
+        [
+            call(
+                "https://test.watersmart.com/index.php/welcome/login?forceEmail=1",
+                data={
+                    "token": "",
+                    "email": "test@home-assistant.io",
+                    "password": "Passw0rd",
+                },
+            ),
+        ]
+    )
+    mock_aiohttp_session.post.assert_has_calls(
+        [
+            call(
+                "https://test.watersmart.com/index.php/welcome/login?forceEmail=1",
+                data={
+                    "token": "",
+                    "loginRefreshToken": "12.34 56.78",
                     "email": "test@home-assistant.io",
                     "password": "Passw0rd",
                 },
