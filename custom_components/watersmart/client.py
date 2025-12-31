@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable
 import datetime as dt
 import functools
+import logging
 import re
 from typing import Any, TypedDict, cast
 
@@ -14,6 +15,8 @@ from bs4 import BeautifulSoup, PageElement
 # Account number format will vary between municipality, so
 # match on a string of non-whitespace characters.
 ACCOUNT_NUMBER_RE = re.compile(r"^\S+$")
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def _authenticated[F: Callable[..., Any], ReturnT](func: F) -> F:
@@ -130,6 +133,7 @@ class WaterSmartClient:
             },
         )
         login_response_text = await login_response.text()
+        _LOGGER.debug("initial login response text: %s", login_response_text)
         soup = BeautifulSoup(login_response_text, "html.parser")
 
         login_refresh_token_node = soup.find("input", {"name": "loginRefreshToken"})
@@ -150,6 +154,9 @@ class WaterSmartClient:
                 },
             )
             login_response_text = await login_response.text()
+            _LOGGER.debug(
+                "login response text for refresh token: %s", login_response_text
+            )
             soup = BeautifulSoup(login_response_text, "html.parser")
 
         errors = [error.text.strip() for error in soup.select(".error-message")]
