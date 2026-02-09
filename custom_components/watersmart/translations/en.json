@@ -15,7 +15,7 @@
                     "password": "Password",
                     "username": "Username"
                 },
-                "description": "Enter your host and credentials. The host is the subdomain for accessing Watersmart, i.e. `bendoregon` for https://bendoregon.watersmart.com/.",
+                "description": "Enter your host and credentials. The host is the subdomain for accessing Watersmart, i.e. `{example_host}` for {example_url}.",
                 "title": "Subdomain & Authentication"
             }
         }
