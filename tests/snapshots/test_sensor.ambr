@@ -110,7 +110,7 @@
     'last_changed': <ANY>,
     'last_reported': <ANY>,
     'last_updated': <ANY>,
-    'state': '1135.6235352',
+    'state': '1135.6',
   })
 # ---
 # name: test_most_recent_hour_sensor
@@ -145,7 +145,7 @@
     'last_changed': <ANY>,
     'last_reported': <ANY>,
     'last_updated': <ANY>,
-    'state': '54.1313885112',
+    'state': '54.1',
   })
 # ---
 # name: test_most_recent_hour_sensor_with_none_in_data
@@ -259,7 +259,7 @@
     'last_changed': <ANY>,
     'last_reported': <ANY>,
     'last_updated': <ANY>,
-    'state': '1056.129887736',
+    'state': '1056.1',
   })
 # ---
 # name: test_sensors_for_zero_gallons
@@ -277,7 +277,7 @@
     'last_changed': <ANY>,
     'last_reported': <ANY>,
     'last_updated': <ANY>,
-    'state': '0.0',
+    'state': '0',
   })
 # ---
 # name: test_sensors_for_zero_gallons.1
@@ -312,6 +312,6 @@
     'last_changed': <ANY>,
     'last_reported': <ANY>,
     'last_updated': <ANY>,
-    'state': '0.0',
+    'state': '0',
   })
 # ---

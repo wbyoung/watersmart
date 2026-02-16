@@ -48,22 +48,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: WaterSmartConfigEntry) -
     # Get available meters by authenticating first
     available_meters = await watersmart.async_get_available_meters()
 
-    # Create a coordinator for each meter
-    coordinators: dict[str, WaterSmartUpdateCoordinator] = {}
-    for meter in available_meters:
-        coordinator = WaterSmartUpdateCoordinator(
-            hass,
-            watersmart,
-            hostname,
-            username,
-            meter_id=meter["meter_id"],
-            meter_name=meter["name"],
-        )
-        await coordinator.async_config_entry_first_refresh()
-        coordinators[meter["meter_id"]] = coordinator
+    # Create a single coordinator for all meters
+    coordinator = WaterSmartUpdateCoordinator(
+        hass,
+        watersmart,
+        hostname,
+        username,
+        meters=available_meters,
+    )
+    await coordinator.async_config_entry_first_refresh()
 
     entry.runtime_data = WaterSmartData(
-        coordinators=coordinators,
+        coordinator=coordinator,
     )
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = entry.runtime_data

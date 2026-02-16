@@ -77,13 +77,13 @@ def __get_date(date_input: str | int | None) -> date | datetime | None:
     )
 
 
-def __get_coordinator(
+def __get_coordinator_and_meter(
     hass: HomeAssistant, call: ServiceCall
-) -> WaterSmartUpdateCoordinator:
-    """Get the coordinator from the entry.
+) -> tuple[WaterSmartUpdateCoordinator, str]:
+    """Get the coordinator and meter_id from the entry.
 
     Returns:
-        The update coordinator.
+        A tuple of (coordinator, meter_id).
 
     Raises:
         ServiceValidationError: When the entry is not valid.
@@ -111,13 +111,14 @@ def __get_coordinator(
         )
 
     runtime_data: WaterSmartData = hass.data[DOMAIN][entry_id]
-    coordinators = runtime_data.coordinators
+    coordinator = runtime_data.coordinator
 
-    # Get meter_id from call data, or use first available coordinator
+    # Get meter_id from call data, or use first available meter
     meter_id: str | None = call.data.get(ATTR_METER_ID)
 
     if meter_id:
-        if meter_id not in coordinators:
+        # Validate meter_id exists
+        if not any(m["meter_id"] == meter_id for m in coordinator.meters):
             raise ServiceValidationError(
                 translation_domain=DOMAIN,
                 translation_key="invalid_meter_id",
@@ -125,10 +126,11 @@ def __get_coordinator(
                     "meter_id": meter_id,
                 },
             )
-        return coordinators[meter_id]
+    else:
+        # Use first meter if no meter_id specified
+        meter_id = coordinator.meters[0]["meter_id"]
 
-    # Return first coordinator if no meter_id specified
-    return next(iter(coordinators.values()))
+    return coordinator, meter_id
 
 
 async def __get_hourly_history(
@@ -136,7 +138,7 @@ async def __get_hourly_history(
     *,
     hass: HomeAssistant,
 ) -> ServiceResponse:
-    coordinator = __get_coordinator(hass, call)
+    coordinator, meter_id = __get_coordinator_and_meter(hass, call)
 
     start = __get_date(call.data.get(ATTR_START))
     end = __get_date(call.data.get(ATTR_END))
@@ -146,7 +148,9 @@ async def __get_hourly_history(
 
     records = []
 
-    for record in coordinator.data["hourly"]:
+    # Get data for the specific meter
+    meter_data = coordinator.data.get(meter_id, {})
+    for record in meter_data.get("hourly", []):
         record_date = _from_timestamp(record["read_datetime"])
 
         if start and dt_util.as_local(record_date) < dt_util.as_local(start):

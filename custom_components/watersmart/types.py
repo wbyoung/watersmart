@@ -16,7 +16,7 @@ type WaterSmartConfigEntry = ConfigEntry[WaterSmartData]
 class WaterSmartData:
     """Runtime data definition."""
 
-    coordinators: dict[str, cdn.WaterSmartUpdateCoordinator]  # meter_id -> coordinator
+    coordinator: cdn.WaterSmartUpdateCoordinator
 
 
 class SensorData(TypedDict):

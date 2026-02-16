@@ -22,18 +22,22 @@ EXCEPTIONS = (AuthenticationError, ClientConnectorError)
 _LOGGER = logging.getLogger(__name__)
 
 
-class CoordinatorData(TypedDict, total=False):
-    """Shape of coordinator data."""
+class MeterData(TypedDict, total=False):
+    """Shape of data for a single meter."""
 
     gallons_for_most_recent_hour: SensorData
     gallons_for_most_recent_full_day: SensorData
     hourly: list[UsageRecord]
 
 
+# CoordinatorData is now a dict mapping meter_id to MeterData
+type CoordinatorData = dict[str, MeterData]
+
+
 class _DataConverterT(Protocol):
     converter_key: SensorKey
 
-    def __call__(self, data: CoordinatorData) -> SensorData: ...  # pragma no cover
+    def __call__(self, data: MeterData) -> SensorData: ...  # pragma no cover
 
 
 class WaterSmartUpdateCoordinator(DataUpdateCoordinator[CoordinatorData]):
@@ -47,26 +51,21 @@ class WaterSmartUpdateCoordinator(DataUpdateCoordinator[CoordinatorData]):
         watersmart: WaterSmartClient,
         hostname: str,
         username: str,
-        *,
-        meter_id: str = "default",
-        meter_name: str = "",
+        meters: list[dict[str, str]],
     ) -> None:
         """Initialize."""
 
-        display_name = meter_name if meter_name else hostname
         super().__init__(
             hass,
             _LOGGER,
-            name=f"WaterSmart {display_name}",
+            name=f"WaterSmart {hostname}",
             update_interval=DEFAULT_SCAN_INTERVAL,
         )
 
         self.watersmart = watersmart
         self.hostname = hostname
         self.username = username
-        self.meter_id = meter_id
-        self.meter_name = meter_name
-        self.device_info = _get_device_info(hostname, username, meter_id, meter_name)
+        self.meters = meters
         self.data: CoordinatorData = {}
         self.data_converters = (
             _sensor_data_for_most_recent_hour,
@@ -82,22 +81,31 @@ class WaterSmartUpdateCoordinator(DataUpdateCoordinator[CoordinatorData]):
         Raises:
             UpdateFailed: If there is an error that could typically occur.
         """
+        result: CoordinatorData = {}
+
         try:
             async with timeout(30):
-                result: CoordinatorData = {
-                    "hourly": await self.watersmart.async_get_hourly_data(
-                        meter_id=self.meter_id if self.meter_id != "default" else None
-                    ),
-                }
+                # Fetch data for each meter sequentially
+                for meter in self.meters:
+                    meter_id = meter["meter_id"]
+
+                    meter_data: MeterData = {
+                        "hourly": await self.watersmart.async_get_hourly_data(
+                            meter_id=meter_id if meter_id != "default" else None
+                        ),
+                    }
+
+                    # Apply data converters for this meter
+                    for converter in self.data_converters:
+                        cast("dict[str, SensorData]", meter_data)[converter.converter_key] = converter(
+                            meter_data
+                        )
+
+                    result[meter_id] = meter_data
+                    _LOGGER.debug("Async update complete for meter %s", meter_id)
+
         except EXCEPTIONS as error:
             raise UpdateFailed(error) from error
-
-        for converter in self.data_converters:
-            cast("dict[str, SensorData]", result)[converter.converter_key] = converter(
-                result
-            )
-
-        _LOGGER.debug("Async update complete for meter %s", self.meter_id)
 
         return result
 
@@ -158,7 +166,7 @@ def _data_converter[F: Callable[..., Any]](
 
 
 @_data_converter(SensorKey.GALLONS_FOR_MOST_RECENT_HOUR)
-def _sensor_data_for_most_recent_hour(data: CoordinatorData) -> SensorData:
+def _sensor_data_for_most_recent_hour(data: MeterData) -> SensorData:
     """Extract data for most recent hour.
 
     Returns:
@@ -179,7 +187,7 @@ def _sensor_data_for_most_recent_hour(data: CoordinatorData) -> SensorData:
 
 
 @_data_converter(SensorKey.GALLONS_FOR_MOST_RECENT_FULL_DAY_KEY)
-def _sensor_data_for_most_recent_full_day(data: CoordinatorData) -> SensorData:
+def _sensor_data_for_most_recent_full_day(data: MeterData) -> SensorData:
     """Extract data for first full day.
 
     Returns:
@@ -197,7 +205,7 @@ def _sensor_data_for_most_recent_full_day(data: CoordinatorData) -> SensorData:
     }
 
 
-def _records_from_first_full_day(data: CoordinatorData) -> list[UsageRecord]:
+def _records_from_first_full_day(data: MeterData) -> list[UsageRecord]:
     """Extract records for first full day.
 
     Returns:
