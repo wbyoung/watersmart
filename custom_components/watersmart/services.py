@@ -29,6 +29,7 @@ ATTR_CONFIG_ENTRY: Final = "config_entry"
 ATTR_FROM_CACHE: Final = "cached"
 ATTR_START: Final = "start"
 ATTR_END: Final = "end"
+ATTR_METER_ID: Final = "meter_id"
 HOURLY_HISTORY_SERVICE_NAME: Final = "get_hourly_history"
 
 SERVICE_SCHEMA: Final = vol.Schema(
@@ -41,6 +42,7 @@ SERVICE_SCHEMA: Final = vol.Schema(
         vol.Optional(ATTR_FROM_CACHE): bool,
         vol.Optional(ATTR_START): vol.Any(str, int),
         vol.Optional(ATTR_END): vol.Any(str, int),
+        vol.Optional(ATTR_METER_ID): str,
     }
 )
 
@@ -109,8 +111,24 @@ def __get_coordinator(
         )
 
     runtime_data: WaterSmartData = hass.data[DOMAIN][entry_id]
+    coordinators = runtime_data.coordinators
 
-    return runtime_data.coordinator
+    # Get meter_id from call data, or use first available coordinator
+    meter_id: str | None = call.data.get(ATTR_METER_ID)
+
+    if meter_id:
+        if meter_id not in coordinators:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="invalid_meter_id",
+                translation_placeholders={
+                    "meter_id": meter_id,
+                },
+            )
+        return coordinators[meter_id]
+
+    # Return first coordinator if no meter_id specified
+    return next(iter(coordinators.values()))
 
 
 async def __get_hourly_history(

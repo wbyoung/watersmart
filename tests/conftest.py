@@ -124,6 +124,16 @@ def mock_watersmart_client(fixture_loader) -> Generator[AsyncMock]:
         client = mock_client.return_value
         client.async_get_account_number.return_value = "1234567-8900"
         client.async_get_hourly_data.return_value = hourly_data
+        # Add meter support for multi-meter functionality
+        client.async_get_available_meters.return_value = [
+            {
+                "meter_id": "default",
+                "name": "test",
+                "account_number": "1234567-8900",
+                "user_id": "",
+                "residence_id": "",
+            }
+        ]
 
         yield client
 

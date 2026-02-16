@@ -47,20 +47,25 @@ class WaterSmartUpdateCoordinator(DataUpdateCoordinator[CoordinatorData]):
         watersmart: WaterSmartClient,
         hostname: str,
         username: str,
+        meter_id: str = "default",
+        meter_name: str = "",
     ) -> None:
         """Initialize."""
 
+        display_name = meter_name if meter_name else hostname
         super().__init__(
             hass,
             _LOGGER,
-            name=f"WaterSmart {hostname}",
+            name=f"WaterSmart {display_name}",
             update_interval=DEFAULT_SCAN_INTERVAL,
         )
 
         self.watersmart = watersmart
         self.hostname = hostname
         self.username = username
-        self.device_info = _get_device_info(hostname, username)
+        self.meter_id = meter_id
+        self.meter_name = meter_name
+        self.device_info = _get_device_info(hostname, username, meter_id, meter_name)
         self.data: CoordinatorData = {}
         self.data_converters = (
             _sensor_data_for_most_recent_hour,
@@ -79,7 +84,9 @@ class WaterSmartUpdateCoordinator(DataUpdateCoordinator[CoordinatorData]):
         try:
             async with timeout(30):
                 result: CoordinatorData = {
-                    "hourly": await self.watersmart.async_get_hourly_data(),
+                    "hourly": await self.watersmart.async_get_hourly_data(
+                        meter_id=self.meter_id if self.meter_id != "default" else None
+                    ),
                 }
         except EXCEPTIONS as error:
             raise UpdateFailed(error) from error
@@ -89,22 +96,25 @@ class WaterSmartUpdateCoordinator(DataUpdateCoordinator[CoordinatorData]):
                 result
             )
 
-        _LOGGER.debug("Async update complete")
+        _LOGGER.debug("Async update complete for meter %s", self.meter_id)
 
         return result
 
 
-def _get_device_info(hostname: str, username: str) -> DeviceInfo:
+def _get_device_info(
+    hostname: str, username: str, meter_id: str = "default", meter_name: str = ""
+) -> DeviceInfo:
     """Get device info.
 
     Returns:
         The device info.
     """
+    display_name = meter_name if meter_name else hostname
     return DeviceInfo(
         entry_type=DeviceEntryType.SERVICE,
-        identifiers={(DOMAIN, f"{hostname}-{username}")},
+        identifiers={(DOMAIN, f"{hostname}-{username}-{meter_id}")},
         manufacturer=MANUFACTURER,
-        name=f"WaterSmart ({hostname})",
+        name=f"WaterSmart ({display_name})",
     )
 
 

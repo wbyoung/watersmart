@@ -51,13 +51,15 @@ async def async_setup_entry(  # noqa: RUF029
     entry: WaterSmartConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up OpenWeatherMap sensor entities based on a config entry."""
+    """Set up WaterSmart sensor entities based on a config entry."""
     data = entry.runtime_data
-    coordinator = data.coordinator
+    coordinators = data.coordinators
 
-    entities: list[WaterSmartSensor] = [
-        WaterSmartSensor(coordinator, description) for description in SENSOR_TYPES
-    ]
+    # Create sensors for each meter
+    entities: list[WaterSmartSensor] = []
+    for coordinator in coordinators.values():
+        for description in SENSOR_TYPES:
+            entities.append(WaterSmartSensor(coordinator, description))
 
     async_add_entities(entities)
 
@@ -80,7 +82,7 @@ class WaterSmartSensor(CoordinatorEntity[WaterSmartUpdateCoordinator], SensorEnt
         self.entity_description = description
         self._sensor_data = self._get_sensor_data(coordinator.data, description.key)
         self._attr_unique_id = (
-            f"{coordinator.hostname}-{coordinator.username}-{description.key}".lower()
+            f"{coordinator.hostname}-{coordinator.username}-{coordinator.meter_id}-{description.key}".lower()
         )
         self._attr_device_info = coordinator.device_info
 

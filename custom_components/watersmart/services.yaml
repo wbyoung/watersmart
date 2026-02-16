@@ -5,6 +5,11 @@ get_hourly_history:
       selector:
         config_entry:
           integration: watersmart
+    meter_id:
+      required: false
+      example: "7176_11498"
+      selector:
+        text:
     cached:
       required: false
       default: false
