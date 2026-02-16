@@ -56,10 +56,11 @@ async def async_setup_entry(  # noqa: RUF029
     coordinators = data.coordinators
 
     # Create sensors for each meter
-    entities: list[WaterSmartSensor] = []
-    for coordinator in coordinators.values():
-        for description in SENSOR_TYPES:
-            entities.append(WaterSmartSensor(coordinator, description))
+    entities = [
+        WaterSmartSensor(coordinator, description)
+        for coordinator in coordinators.values()
+        for description in SENSOR_TYPES
+    ]
 
     async_add_entities(entities)
 

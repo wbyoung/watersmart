@@ -126,7 +126,7 @@ class WaterSmartClient:
         """
         meter = next((m for m in self._meters if m["meter_id"] == meter_id), None)
         if not meter:
-            raise ValueError(f"Meter {meter_id} not found")
+            raise ValueError(meter_id)
 
         session = self._session
         hostname = self._hostname
@@ -212,7 +212,7 @@ class WaterSmartClient:
             raise AuthenticationError(errors)
 
         # Extract account number - supports two HTML formats
-        account_number = self._extract_account_number(soup)
+        account_number = WaterSmartClient._extract_account_number(soup)
         if not ACCOUNT_NUMBER_RE.match(account_number):
             self._account_number = None
             raise InvalidAccountNumberError("invalid account number: " + account_number)
@@ -222,7 +222,8 @@ class WaterSmartClient:
         # Extract available meters
         self._meters = self._extract_meters(soup)
 
-    def _extract_account_number(self, soup: BeautifulSoup) -> str:
+    @staticmethod
+    def _extract_account_number(soup: BeautifulSoup) -> str:
         """Extract account number from HTML.
 
         Supports two formats:
@@ -244,12 +245,12 @@ class WaterSmartClient:
             if account_number_title:
                 account_section = account_number_title.parent
                 account_number_title.extract()
-                return account_section.text.strip()
+                return str(account_section.text.strip())
 
         # Try alternative format (hptx style)
         account_divs = soup.find_all("div", class_="account")
         for div in account_divs:
-            text = div.get_text(strip=True)
+            text = str(div.get_text(strip=True))
             # Skip the "X Accounts" text
             if "Account" in text:
                 continue
@@ -257,7 +258,7 @@ class WaterSmartClient:
             if re.match(r"^\S+$", text) and not text.isdigit():
                 return text
 
-        raise ScrapeError("Could not extract account number from page")
+        raise ScrapeError
 
     def _extract_meters(self, soup: BeautifulSoup) -> list[MeterInfo]:
         """Extract available meters from HTML.

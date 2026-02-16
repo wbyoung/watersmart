@@ -47,6 +47,7 @@ class WaterSmartUpdateCoordinator(DataUpdateCoordinator[CoordinatorData]):
         watersmart: WaterSmartClient,
         hostname: str,
         username: str,
+        *,
         meter_id: str = "default",
         meter_name: str = "",
     ) -> None:
