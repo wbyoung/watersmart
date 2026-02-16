@@ -88,13 +88,13 @@ Gallons of water used on the most recent hour of data available.
 
 ### Multi-Meter Example
 
-If you have two meters (e.g., "4531 Rheims Place, SFR" and "4531 Rheims Place, Irrigation-Only"), you'll see:
+If you have two meters (e.g., "Address, SFR" and "Address, Irrigation-Only"), you'll see:
 
-**Device 1: WaterSmart (4531 Rheims Place, SFR)**
+**Device 1: WaterSmart (Address, SFR)**
 - `sensor.watersmart_hptx_user_email_com_7176_11498_gallons_for_most_recent_hour`
 - `sensor.watersmart_hptx_user_email_com_7176_11498_gallons_for_most_recent_full_day`
 
-**Device 2: WaterSmart (4531 Rheims Place, Irrigation-Only)**
+**Device 2: WaterSmart (Address, Irrigation-Only)**
 - `sensor.watersmart_hptx_user_email_com_13089_11499_gallons_for_most_recent_hour`
 - `sensor.watersmart_hptx_user_email_com_13089_11499_gallons_for_most_recent_full_day`
 
