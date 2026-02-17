@@ -13,7 +13,7 @@ from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util.dt import as_local, get_default_time_zone, start_of_local_day
 
-from .client import AuthenticationError, UsageRecord, WaterSmartClient
+from .client import AuthenticationError, MeterInfo, UsageRecord, WaterSmartClient
 from .const import DEFAULT_SCAN_INTERVAL, DOMAIN, MANUFACTURER, SensorKey
 from .types import SensorData
 
@@ -51,7 +51,7 @@ class WaterSmartUpdateCoordinator(DataUpdateCoordinator[CoordinatorData]):
         watersmart: WaterSmartClient,
         hostname: str,
         username: str,
-        meters: list[dict[str, str]],
+        meters: list[MeterInfo],
     ) -> None:
         """Initialize."""
 
@@ -137,13 +137,13 @@ class _DataConverter:
     def __init__(
         self,
         key: SensorKey,
-        func: Callable[[CoordinatorData], SensorData],
+        func: Callable[[MeterData], SensorData],
     ) -> None:
         super().__init__()
         self.converter_key = key
         self.func = func
 
-    def __call__(self, data: CoordinatorData) -> SensorData:
+    def __call__(self, data: MeterData) -> SensorData:
         return self.func(data)
 
 
