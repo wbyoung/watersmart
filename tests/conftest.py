@@ -8,6 +8,24 @@ from unittest.mock import AsyncMock, PropertyMock, patch
 
 from homeassistant.core import HomeAssistant
 import pytest
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _pre_start_pycares_thread():
+    """Pre-start the pycares global shutdown thread.
+
+    pycares lazily starts a daemon thread the first time a DNS channel is
+    destroyed.  If that happens during a test, verify_cleanup sees an
+    unexpected new thread and raises an AssertionError at teardown.
+    Starting the thread here (before any test records its thread snapshot)
+    keeps it out of the diff.
+    """
+    try:
+        import pycares  # noqa: PLC0415
+
+        pycares._shutdown_manager.start()
+    except (ImportError, AttributeError):
+        pass
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.watersmart.client import AuthenticationError
