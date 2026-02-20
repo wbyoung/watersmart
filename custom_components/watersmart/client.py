@@ -218,6 +218,7 @@ class WaterSmartClient:
             raise InvalidAccountNumberError("invalid account number: " + account_number)
 
         self._account_number = account_number
+        self._current_meter_id = None
 
         # Extract available meters
         self._meters = self._extract_meters(soup)
