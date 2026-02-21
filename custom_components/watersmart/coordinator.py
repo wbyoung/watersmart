@@ -118,7 +118,7 @@ def _get_device_info(
     Returns:
         The device info.
     """
-    display_name = meter_name if meter_name else hostname
+    display_name = meter_name or hostname
     return DeviceInfo(
         entry_type=DeviceEntryType.SERVICE,
         identifiers={(DOMAIN, f"{hostname}-{username}-{meter_id}")},
