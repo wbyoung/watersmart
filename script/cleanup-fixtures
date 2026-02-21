@@ -131,7 +131,10 @@ class MultiMeterWebPageAnonymizer:
             inline = link.find("div", class_="inline")
             if not inline:
                 continue
-            name_h3, account_div = inline.find("h3"), inline.find("div", class_="account")
+            name_h3, account_div = (
+                inline.find("h3"),
+                inline.find("div", class_="account"),
+            )
             name_replacement, account_replacement = next(replacements)
             if name_h3:
                 name_h3.string = f"\n         {name_replacement}\n        "
