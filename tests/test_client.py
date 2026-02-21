@@ -209,3 +209,71 @@ async def test_async_get_async_get_hourly_data(
         },
         {"read_datetime": 1718834400, "gallons": 0, "flags": None, "leak_gallons": 0},
     ]
+
+
+async def test_multimeter_login_success(
+    hass: HomeAssistant, mock_aiohttp_session, fixture_loader
+):
+    mock_aiohttp_session.post.return_value.text.return_value = (
+        fixture_loader.login_success_multimeter_html
+    )
+
+    client = WaterSmartClient(
+        hostname="hptx",
+        username="test@home-assistant.io",
+        password="Passw0rd",  # noqa: S106
+    )
+
+    await client.async_get_account_number()
+
+    mock_aiohttp_session.post.assert_called_once_with(
+        "https://hptx.watersmart.com/index.php/welcome/login?forceEmail=1",
+        data={
+            "token": "",
+            "email": "test@home-assistant.io",
+            "password": "Passw0rd",
+        },
+    )
+
+
+async def test_multimeter_account_number(
+    hass: HomeAssistant, mock_aiohttp_session, fixture_loader
+):
+    """Account number is the first non-summary div.account in the hptx format."""
+    mock_aiohttp_session.post.return_value.text.return_value = (
+        fixture_loader.login_success_multimeter_html
+    )
+
+    client = WaterSmartClient(hostname="hptx", username="", password="")
+    account_number = await client.async_get_account_number()
+
+    assert account_number == "1234567-8900"
+
+
+async def test_multimeter_available_meters(
+    hass: HomeAssistant, mock_aiohttp_session, fixture_loader
+):
+    """Both combined=0 meter links are extracted; the combined=1 summary is skipped."""
+    mock_aiohttp_session.post.return_value.text.return_value = (
+        fixture_loader.login_success_multimeter_html
+    )
+
+    client = WaterSmartClient(hostname="hptx", username="", password="")
+    meters = await client.async_get_available_meters()
+
+    assert meters == [
+        {
+            "meter_id": "13089_11499",
+            "name": "123 N Main St",
+            "account_number": "1234567-8900",
+            "user_id": "13089",
+            "residence_id": "11499",
+        },
+        {
+            "meter_id": "13090_11500",
+            "name": "456 S Oak Ave",
+            "account_number": "9876543-2100",
+            "user_id": "13090",
+            "residence_id": "11500",
+        },
+    ]

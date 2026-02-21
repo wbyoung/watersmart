@@ -1,0 +1,92 @@
+<html>
+ <body class="portal desktop responsive">
+  <div class="modal-dialog" name="feedback-dialog">
+   <div class="modal-body">
+    <div class="feedback-body clearfix">
+     <div class="the-form">
+      <form action="/index.php/rest/v1/Feedback/submit?" id="feedback-form" method="post">
+       <div class="standard-form">
+        <ol class="form-rows ui form">
+         <li class="clearfix">
+          <div class="ui input field">
+           <div class="error-message phone_number" id="FeedbackFormModel_phone_number_em_" style="display:none">
+           </div>
+          </div>
+         </li>
+         <li class="clearfix">
+          <div class="ui input field">
+           <div class="error-message subject" id="FeedbackFormModel_subject_em_" style="display:none">
+           </div>
+          </div>
+         </li>
+         <li class="clearfix top-label">
+          <div class="ui field">
+           <div class="error-message message" id="FeedbackFormModel_message_em_" style="display:none">
+           </div>
+          </div>
+         </li>
+        </ol>
+       </div>
+      </form>
+     </div>
+    </div>
+   </div>
+  </div>
+  <nav id="sidebar-nav">
+   <div class="portal-nav sidebar">
+    <div class="linked-accounts">
+     <div class="content">
+      <div class="standard-form">
+       <div class="error-message">
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+  </nav>
+  <div id="main-wrapper">
+   <div class="user-picker">
+    <div class="accounts-header">
+     <div class="account">
+      2 Accounts
+     </div>
+    </div>
+    <ul class="accounts-list">
+     <li>
+      <a href="/index.php/userPicker/pick?userID=13089&amp;residenceID=11499&amp;combined=1&amp;returnUrlOverride=">
+       <div class="inline">
+        <h3>
+         All Accounts
+        </h3>
+       </div>
+      </a>
+     </li>
+     <li>
+      <a href="/index.php/userPicker/pick?userID=13089&amp;residenceID=11499&amp;combined=0&amp;returnUrlOverride=">
+       <div class="inline">
+        <h3>
+         123 N Main St
+        </h3>
+        <div class="account">
+         1234567-8900
+        </div>
+       </div>
+      </a>
+     </li>
+     <li>
+      <a href="/index.php/userPicker/pick?userID=13090&amp;residenceID=11500&amp;combined=0&amp;returnUrlOverride=">
+       <div class="inline">
+        <h3>
+         456 S Oak Ave
+        </h3>
+        <div class="account">
+         9876543-2100
+        </div>
+       </div>
+      </a>
+     </li>
+    </ul>
+   </div>
+  </div>
+ </body>
+</html>
