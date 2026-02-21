@@ -9,7 +9,7 @@ import re
 from typing import Any, TypedDict, cast
 
 import aiohttp
-from bs4 import BeautifulSoup, PageElement
+from bs4 import BeautifulSoup
 
 # Account number format will vary between municipality, so
 # match on a string of non-whitespace characters.
@@ -66,6 +66,16 @@ class UsageRecord(TypedDict):
     flags: None
 
 
+class MeterInfo(TypedDict):
+    """MeterInfo class."""
+
+    meter_id: str
+    name: str
+    account_number: str
+    user_id: str
+    residence_id: str
+
+
 class WaterSmartClient:
     """WaterSmart Client."""
 
@@ -83,6 +93,8 @@ class WaterSmartClient:
         self._session = session or aiohttp.ClientSession()
         self._account_number: str | None = None
         self._authenticated_at: dt.datetime | None = None
+        self._meters: list[MeterInfo] = []
+        self._current_meter_id: str | None = None
 
     @_authenticated
     async def async_get_account_number(self) -> str | None:
@@ -95,12 +107,55 @@ class WaterSmartClient:
         return self._account_number
 
     @_authenticated
-    async def async_get_hourly_data(self) -> list[UsageRecord]:
+    async def async_get_available_meters(self) -> list[MeterInfo]:
+        """Get available meters for this account.
+
+        Returns:
+            List of available meters.
+        """
+        return self._meters
+
+    async def async_switch_meter(self, meter_id: str) -> None:
+        """Switch to a specific meter.
+
+        Args:
+            meter_id: The meter ID to switch to.
+
+        Raises:
+            ValueError: If meter_id is not found.
+        """
+        meter = next((m for m in self._meters if m["meter_id"] == meter_id), None)
+        if not meter:
+            raise ValueError(meter_id)
+
+        session = self._session
+        hostname = self._hostname
+        await session.get(
+            f"https://{hostname}.watersmart.com/index.php/userPicker/pick",
+            params={
+                "userID": meter["user_id"],
+                "residenceID": meter["residence_id"],
+                "combined": "0",
+                "returnUrlOverride": "",
+            },
+        )
+        self._current_meter_id = meter_id
+
+    @_authenticated
+    async def async_get_hourly_data(
+        self, meter_id: str | None = None
+    ) -> list[UsageRecord]:
         """Get hourly water usage data.
+
+        Args:
+            meter_id: Optional meter ID to get data for. If not provided,
+                     uses the currently active meter.
 
         Returns:
             The objects in the response data.
         """
+        if meter_id and meter_id != self._current_meter_id:
+            await self.async_switch_meter(meter_id)
 
         session = self._session
         hostname = self._hostname
@@ -158,26 +213,117 @@ class WaterSmartClient:
         if len(errors):
             raise AuthenticationError(errors)
 
-        account = _assert_node(
-            soup.find(id="account-navigation"), "Missing #account-navigation"
-        )
-        account_number_title = _assert_node(
-            account.find(lambda node: node.get_text(strip=True) == "Account Number"),
-            "Missing tag with string content `Account Number` under #account-navigation",
-        )
-        account_section = account_number_title.parent
-        account_number_title.extract()
-
-        account_number = account_section.text.strip()
-
+        # Extract account number - supports two HTML formats
+        account_number = WaterSmartClient._extract_account_number(soup)
         if not ACCOUNT_NUMBER_RE.match(account_number):
             self._account_number = None
             raise InvalidAccountNumberError("invalid account number: " + account_number)
 
         self._account_number = account_number
+        self._current_meter_id = None
 
+        # Extract available meters
+        self._meters = self._extract_meters(soup)
 
-def _assert_node(node: PageElement, message: str) -> PageElement:
-    if not node:
-        raise ScrapeError(message)
-    return node
+    @staticmethod
+    def _extract_account_number(soup: BeautifulSoup) -> str:
+        """Extract account number from HTML.
+
+        Supports two formats:
+        1. Standard format with #account-navigation
+        2. Alternative format with div.account (hptx style)
+
+        Returns:
+            The account number.
+
+        Raises:
+            ScrapeError: If account number cannot be extracted.
+        """
+        # Try standard format first
+        account = soup.find(id="account-navigation")
+        if account:
+            account_number_title = account.find(
+                lambda node: node.get_text(strip=True) == "Account Number"
+            )
+            if account_number_title:
+                account_section = account_number_title.parent
+                account_number_title.extract()
+                return str(account_section.text.strip())
+
+        # Try alternative format (hptx style)
+        account_divs = soup.find_all("div", class_="account")
+        for div in account_divs:
+            text = str(div.get_text(strip=True))
+            # Skip the "X Accounts" text
+            if "Account" in text:
+                continue
+            # Match account number patterns (flexible format)
+            if re.match(r"^\S+$", text) and not text.isdigit():
+                return text
+
+        raise ScrapeError
+
+    def _extract_meters(self, soup: BeautifulSoup) -> list[MeterInfo]:
+        """Extract available meters from HTML.
+
+        Returns:
+            List of available meters.
+        """
+        meters: list[MeterInfo] = []
+
+        # Look for userPicker links (multi-meter format)
+        picker_links = soup.find_all("a", href=re.compile(r"userPicker/pick"))
+
+        for link in picker_links:
+            href = link.get("href", "")
+
+            # Skip combined summary
+            if "combined=1" in href or "combined=0" not in href:
+                continue
+
+            # Extract userID and residenceID
+            user_id_match = re.search(r"userID=(\d+)", href)
+            residence_id_match = re.search(r"residenceID=(\d+)", href)
+
+            if user_id_match and residence_id_match:
+                user_id = user_id_match.group(1)
+                residence_id = residence_id_match.group(1)
+
+                # Get meter name and account number
+                inline_div = link.find("div", class_="inline")
+                if inline_div:
+                    name_h3 = inline_div.find("h3")
+                    account_div = inline_div.find("div", class_="account")
+
+                    name = name_h3.get_text(strip=True) if name_h3 else "Unknown"
+                    account = (
+                        account_div.get_text(strip=True)
+                        if account_div
+                        else self._account_number or "Unknown"
+                    )
+
+                    # Create a unique meter_id from user_id and residence_id
+                    meter_id = f"{user_id}_{residence_id}"
+
+                    meter: MeterInfo = {
+                        "meter_id": meter_id,
+                        "name": name,
+                        "account_number": account,
+                        "user_id": user_id,
+                        "residence_id": residence_id,
+                    }
+                    meters.append(meter)
+
+        # If no meters found, create a single default meter (backward compatibility)
+        if not meters:
+            meters.append(
+                {
+                    "meter_id": "default",
+                    "name": f"{self._hostname}",
+                    "account_number": self._account_number or "Unknown",
+                    "user_id": "",
+                    "residence_id": "",
+                }
+            )
+
+        return meters

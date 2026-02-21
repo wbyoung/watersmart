@@ -37,6 +37,9 @@
         "invalid_date": {
             "message": "Invalid date provided. Got {date}"
         },
+        "invalid_meter_id": {
+            "message": "Invalid meter ID provided. Got {meter_id}"
+        },
         "unloaded_config_entry": {
             "message": "Invalid config entry provided. {config_entry} is not loaded."
         }

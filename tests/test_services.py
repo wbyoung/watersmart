@@ -12,6 +12,7 @@ import voluptuous as vol
 from custom_components.watersmart.const import DOMAIN
 from custom_components.watersmart.services import (
     ATTR_CONFIG_ENTRY,
+    ATTR_METER_ID,
     HOURLY_HISTORY_SERVICE_NAME,
 )
 
@@ -123,6 +124,12 @@ def config_entry_data(
             ServiceValidationError,
             "Invalid date provided. Got incorrect date",
         ),
+        (
+            {"config_entry": True},
+            {ATTR_METER_ID: "nonexistent"},
+            ServiceValidationError,
+            "Invalid meter ID provided. Got nonexistent",
+        ),
     ],
     indirect=["config_entry_data"],
 )
@@ -145,6 +152,23 @@ async def test_service_validation(
             return_response=True,
         )
     assert re.match(error_message, str(exc.value))
+
+
+@pytest.mark.usefixtures("init_integration")
+async def test_service_with_valid_meter_id(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+    mock_watersmart_client,
+) -> None:
+    """Service call with a known meter_id succeeds (exercises the valid-meter branch)."""
+    result = await hass.services.async_call(
+        DOMAIN,
+        HOURLY_HISTORY_SERVICE_NAME,
+        {ATTR_CONFIG_ENTRY: mock_config_entry.entry_id, ATTR_METER_ID: "default"},
+        blocking=True,
+        return_response=True,
+    )
+    assert result is not None
 
 
 @pytest.mark.usefixtures("init_integration")

@@ -2,63 +2,65 @@
 # name: test_entry_diagnostics
   dict({
     'data': dict({
-      'gallons_for_most_recent_full_day_key': dict({
-        'attrs': dict({
-          'related': list([
-          ]),
+      'default': dict({
+        <SensorKey.GALLONS_FOR_MOST_RECENT_FULL_DAY_KEY: 'gallons_for_most_recent_full_day_key'>: dict({
+          'attrs': dict({
+            'related': list([
+            ]),
+          }),
+          'state': 0,
         }),
-        'state': 0,
+        <SensorKey.GALLONS_FOR_MOST_RECENT_HOUR: 'gallons_for_most_recent_hour'>: dict({
+          'attrs': dict({
+            'related': list([
+              dict({
+                'gallons': 7.48,
+                'start': '2024-06-19T19:00:00-07:00',
+              }),
+              dict({
+                'gallons': 0,
+                'start': '2024-06-19T20:00:00-07:00',
+              }),
+              dict({
+                'gallons': 7.48,
+                'start': '2024-06-19T21:00:00-07:00',
+              }),
+              dict({
+                'gallons': 0,
+                'start': '2024-06-19T22:00:00-07:00',
+              }),
+            ]),
+            'start': '2024-06-19T22:00:00-07:00',
+          }),
+          'state': 0,
+        }),
+        'hourly': list([
+          dict({
+            'flags': None,
+            'gallons': 7.48,
+            'leak_gallons': 0,
+            'read_datetime': 1718823600,
+          }),
+          dict({
+            'flags': None,
+            'gallons': 0,
+            'leak_gallons': 0,
+            'read_datetime': 1718827200,
+          }),
+          dict({
+            'flags': None,
+            'gallons': 7.48,
+            'leak_gallons': 0,
+            'read_datetime': 1718830800,
+          }),
+          dict({
+            'flags': None,
+            'gallons': 0,
+            'leak_gallons': 0,
+            'read_datetime': 1718834400,
+          }),
+        ]),
       }),
-      'gallons_for_most_recent_hour': dict({
-        'attrs': dict({
-          'related': list([
-            dict({
-              'gallons': 7.48,
-              'start': '2024-06-19T19:00:00-07:00',
-            }),
-            dict({
-              'gallons': 0,
-              'start': '2024-06-19T20:00:00-07:00',
-            }),
-            dict({
-              'gallons': 7.48,
-              'start': '2024-06-19T21:00:00-07:00',
-            }),
-            dict({
-              'gallons': 0,
-              'start': '2024-06-19T22:00:00-07:00',
-            }),
-          ]),
-          'start': '2024-06-19T22:00:00-07:00',
-        }),
-        'state': 0,
-      }),
-      'hourly': list([
-        dict({
-          'flags': None,
-          'gallons': 7.48,
-          'leak_gallons': 0,
-          'read_datetime': 1718823600,
-        }),
-        dict({
-          'flags': None,
-          'gallons': 0,
-          'leak_gallons': 0,
-          'read_datetime': 1718827200,
-        }),
-        dict({
-          'flags': None,
-          'gallons': 7.48,
-          'leak_gallons': 0,
-          'read_datetime': 1718830800,
-        }),
-        dict({
-          'flags': None,
-          'gallons': 0,
-          'leak_gallons': 0,
-          'read_datetime': 1718834400,
-        }),
-      ]),
     }),
     'entry': dict({
       'data': dict({

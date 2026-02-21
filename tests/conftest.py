@@ -13,6 +13,25 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 from custom_components.watersmart.client import AuthenticationError
 from custom_components.watersmart.const import DOMAIN
 
+
+@pytest.fixture(scope="session", autouse=True)
+def _pre_start_pycares_thread():
+    """Pre-start the pycares global shutdown thread.
+
+    pycares lazily starts a daemon thread the first time a DNS channel is
+    destroyed.  If that happens during a test, verify_cleanup sees an
+    unexpected new thread and raises an AssertionError at teardown.
+    Starting the thread here (before any test records its thread snapshot)
+    keeps it out of the diff.
+    """
+    try:
+        import pycares  # noqa: PLC0415
+
+        pycares._shutdown_manager.start()
+    except (ImportError, AttributeError):
+        pass
+
+
 FIXTURES_DIR = Path(__file__).parent.joinpath("fixtures")
 
 
@@ -124,6 +143,16 @@ def mock_watersmart_client(fixture_loader) -> Generator[AsyncMock]:
         client = mock_client.return_value
         client.async_get_account_number.return_value = "1234567-8900"
         client.async_get_hourly_data.return_value = hourly_data
+        # Add meter support for multi-meter functionality
+        client.async_get_available_meters.return_value = [
+            {
+                "meter_id": "default",
+                "name": "test",
+                "account_number": "1234567-8900",
+                "user_id": "",
+                "residence_id": "",
+            }
+        ]
 
         yield client
 

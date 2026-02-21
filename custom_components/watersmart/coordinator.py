@@ -13,7 +13,7 @@ from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util.dt import as_local, get_default_time_zone, start_of_local_day
 
-from .client import AuthenticationError, UsageRecord, WaterSmartClient
+from .client import AuthenticationError, MeterInfo, UsageRecord, WaterSmartClient
 from .const import DEFAULT_SCAN_INTERVAL, DOMAIN, MANUFACTURER, SensorKey
 from .types import SensorData
 
@@ -22,18 +22,22 @@ EXCEPTIONS = (AuthenticationError, ClientConnectorError)
 _LOGGER = logging.getLogger(__name__)
 
 
-class CoordinatorData(TypedDict, total=False):
-    """Shape of coordinator data."""
+class MeterData(TypedDict, total=False):
+    """Shape of data for a single meter."""
 
     gallons_for_most_recent_hour: SensorData
     gallons_for_most_recent_full_day: SensorData
     hourly: list[UsageRecord]
 
 
+# CoordinatorData is now a dict mapping meter_id to MeterData
+type CoordinatorData = dict[str, MeterData]
+
+
 class _DataConverterT(Protocol):
     converter_key: SensorKey
 
-    def __call__(self, data: CoordinatorData) -> SensorData: ...  # pragma no cover
+    def __call__(self, data: MeterData) -> SensorData: ...  # pragma no cover
 
 
 class WaterSmartUpdateCoordinator(DataUpdateCoordinator[CoordinatorData]):
@@ -47,6 +51,7 @@ class WaterSmartUpdateCoordinator(DataUpdateCoordinator[CoordinatorData]):
         watersmart: WaterSmartClient,
         hostname: str,
         username: str,
+        meters: list[MeterInfo],
     ) -> None:
         """Initialize."""
 
@@ -60,7 +65,7 @@ class WaterSmartUpdateCoordinator(DataUpdateCoordinator[CoordinatorData]):
         self.watersmart = watersmart
         self.hostname = hostname
         self.username = username
-        self.device_info = _get_device_info(hostname, username)
+        self.meters = meters
         self.data: CoordinatorData = {}
         self.data_converters = (
             _sensor_data_for_most_recent_hour,
@@ -76,35 +81,49 @@ class WaterSmartUpdateCoordinator(DataUpdateCoordinator[CoordinatorData]):
         Raises:
             UpdateFailed: If there is an error that could typically occur.
         """
+        result: CoordinatorData = {}
+
         try:
             async with timeout(30):
-                result: CoordinatorData = {
-                    "hourly": await self.watersmart.async_get_hourly_data(),
-                }
+                # Fetch data for each meter sequentially
+                for meter in self.meters:
+                    meter_id = meter["meter_id"]
+
+                    meter_data: MeterData = {
+                        "hourly": await self.watersmart.async_get_hourly_data(
+                            meter_id=meter_id if meter_id != "default" else None
+                        ),
+                    }
+
+                    # Apply data converters for this meter
+                    for converter in self.data_converters:
+                        cast("dict[str, SensorData]", meter_data)[
+                            converter.converter_key
+                        ] = converter(meter_data)
+
+                    result[meter_id] = meter_data
+                    _LOGGER.debug("Async update complete for meter %s", meter_id)
+
         except EXCEPTIONS as error:
             raise UpdateFailed(error) from error
-
-        for converter in self.data_converters:
-            cast("dict[str, SensorData]", result)[converter.converter_key] = converter(
-                result
-            )
-
-        _LOGGER.debug("Async update complete")
 
         return result
 
 
-def _get_device_info(hostname: str, username: str) -> DeviceInfo:
+def _get_device_info(
+    hostname: str, username: str, meter_id: str = "default", meter_name: str = ""
+) -> DeviceInfo:
     """Get device info.
 
     Returns:
         The device info.
     """
+    display_name = meter_name or hostname
     return DeviceInfo(
         entry_type=DeviceEntryType.SERVICE,
-        identifiers={(DOMAIN, f"{hostname}-{username}")},
+        identifiers={(DOMAIN, f"{hostname}-{username}-{meter_id}")},
         manufacturer=MANUFACTURER,
-        name=f"WaterSmart ({hostname})",
+        name=f"WaterSmart ({display_name})",
     )
 
 
@@ -118,13 +137,13 @@ class _DataConverter:
     def __init__(
         self,
         key: SensorKey,
-        func: Callable[[CoordinatorData], SensorData],
+        func: Callable[[MeterData], SensorData],
     ) -> None:
         super().__init__()
         self.converter_key = key
         self.func = func
 
-    def __call__(self, data: CoordinatorData) -> SensorData:
+    def __call__(self, data: MeterData) -> SensorData:
         return self.func(data)
 
 
@@ -147,7 +166,7 @@ def _data_converter[F: Callable[..., Any]](
 
 
 @_data_converter(SensorKey.GALLONS_FOR_MOST_RECENT_HOUR)
-def _sensor_data_for_most_recent_hour(data: CoordinatorData) -> SensorData:
+def _sensor_data_for_most_recent_hour(data: MeterData) -> SensorData:
     """Extract data for most recent hour.
 
     Returns:
@@ -168,7 +187,7 @@ def _sensor_data_for_most_recent_hour(data: CoordinatorData) -> SensorData:
 
 
 @_data_converter(SensorKey.GALLONS_FOR_MOST_RECENT_FULL_DAY_KEY)
-def _sensor_data_for_most_recent_full_day(data: CoordinatorData) -> SensorData:
+def _sensor_data_for_most_recent_full_day(data: MeterData) -> SensorData:
     """Extract data for first full day.
 
     Returns:
@@ -186,7 +205,7 @@ def _sensor_data_for_most_recent_full_day(data: CoordinatorData) -> SensorData:
     }
 
 
-def _records_from_first_full_day(data: CoordinatorData) -> list[UsageRecord]:
+def _records_from_first_full_day(data: MeterData) -> list[UsageRecord]:
     """Extract records for first full day.
 
     Returns:

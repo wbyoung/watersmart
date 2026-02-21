@@ -95,8 +95,94 @@ class WebPageAnonymizer:
         return is_account or is_errors
 
 
+class MultiMeterWebPageAnonymizer:
+    """Anonymizer for multi-meter (hptx-style) login fixtures.
+
+    Keeps .error-message divs and userPicker links, anonymizes addresses and
+    account numbers inside each meter link.
+    """
+
+    FIXTURES: Final = ("login_success_multimeter.html",)
+
+    # Replacement values for each meter entry (in DOM order, combined=0 links only)
+    _METER_REPLACEMENTS: Final = (
+        ("123 N Main St", "1234567-8900"),
+        ("456 S Oak Ave", "9876543-2100"),
+    )
+
+    def run(self) -> None:
+        for fixture in self.FIXTURES:
+            path = Path(__file__).parent.parent.joinpath("tests/fixtures", fixture)
+            html = path.read_text()
+            soup = self._shorten(BeautifulSoup(html, "html.parser"))
+            self._anonymize_meters(soup)
+            soup.smooth()
+            path.write_text(soup.prettify())
+
+    @classmethod
+    def _anonymize_meters(cls, soup: PageElement) -> None:
+        import re  # noqa: PLC0415
+
+        replacements = iter(cls._METER_REPLACEMENTS)
+        for link in soup.find_all("a", href=re.compile(r"userPicker/pick")):
+            href = link.get("href", "")
+            if "combined=1" in href or "combined=0" not in href:
+                continue
+            inline = link.find("div", class_="inline")
+            if not inline:
+                continue
+            name_h3, account_div = (
+                inline.find("h3"),
+                inline.find("div", class_="account"),
+            )
+            name_replacement, account_replacement = next(replacements)
+            if name_h3:
+                name_h3.string = f"\n         {name_replacement}\n        "
+            if account_div:
+                account_div.string = f"\n         {account_replacement}\n        "
+
+    @classmethod
+    def _shorten(cls, doc: PageElement) -> PageElement:
+        """Keep only .error-message nodes and the .user-picker block.
+
+        Returns:
+            The modified document with only target nodes retained.
+        """
+        stack = [doc]
+
+        while stack:
+            node = stack.pop()
+
+            if cls._contains_target(node) or cls._is_target(node):
+                if not cls._is_target(node):
+                    stack.extend(node.contents)
+            else:
+                node.extract()
+
+        return doc
+
+    @classmethod
+    def _contains_target(cls, node: PageElement) -> bool:
+        is_string = isinstance(node, NavigableString)
+        if is_string:
+            return False
+        has_errors = len(node.select(".error-message")) > 0
+        has_picker = node.find(class_="user-picker") is not None
+        return has_errors or has_picker
+
+    @classmethod
+    def _is_target(cls, node: PageElement) -> bool:
+        is_string = isinstance(node, NavigableString)
+        if is_string:
+            return False
+        is_errors = "error-message" in node.get("class", "")
+        is_picker = "user-picker" in node.get("class", "")
+        return is_errors or is_picker
+
+
 def main() -> None:
     WebPageAnonymizer().run()
+    MultiMeterWebPageAnonymizer().run()
     JSONResponseAnonymizer().run()
 
 
