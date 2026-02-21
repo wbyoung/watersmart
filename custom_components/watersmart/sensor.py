@@ -86,9 +86,7 @@ class WaterSmartSensor(CoordinatorEntity[WaterSmartUpdateCoordinator], SensorEnt
         self._sensor_data = self._get_sensor_data(
             coordinator.data, self._meter_id, description.key
         )
-        self._attr_unique_id = (
-            f"{coordinator.hostname}-{coordinator.username}-{self._meter_id}-{description.key}".lower()
-        )
+        self._attr_unique_id = f"{coordinator.hostname}-{coordinator.username}-{self._meter_id}-{description.key}".lower()
         self._attr_device_info = _get_device_info(
             coordinator.hostname,
             coordinator.username,
@@ -126,4 +124,6 @@ class WaterSmartSensor(CoordinatorEntity[WaterSmartUpdateCoordinator], SensorEnt
             The actual sensor data.
         """
         meter_data = coordinator_data.get(meter_id, {})
-        return cast("dict[str, SensorData]", meter_data).get(kind, {"state": None, "attrs": {}})
+        return cast("dict[str, SensorData]", meter_data).get(
+            kind, {"state": None, "attrs": {}}
+        )

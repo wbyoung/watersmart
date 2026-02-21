@@ -142,7 +142,9 @@ class WaterSmartClient:
         self._current_meter_id = meter_id
 
     @_authenticated
-    async def async_get_hourly_data(self, meter_id: str | None = None) -> list[UsageRecord]:
+    async def async_get_hourly_data(
+        self, meter_id: str | None = None
+    ) -> list[UsageRecord]:
         """Get hourly water usage data.
 
         Args:
@@ -294,7 +296,11 @@ class WaterSmartClient:
                     account_div = inline_div.find("div", class_="account")
 
                     name = name_h3.get_text(strip=True) if name_h3 else "Unknown"
-                    account = account_div.get_text(strip=True) if account_div else self._account_number or "Unknown"
+                    account = (
+                        account_div.get_text(strip=True)
+                        if account_div
+                        else self._account_number or "Unknown"
+                    )
 
                     # Create a unique meter_id from user_id and residence_id
                     meter_id = f"{user_id}_{residence_id}"
@@ -310,12 +316,14 @@ class WaterSmartClient:
 
         # If no meters found, create a single default meter (backward compatibility)
         if not meters:
-            meters.append({
-                "meter_id": "default",
-                "name": f"{self._hostname}",
-                "account_number": self._account_number or "Unknown",
-                "user_id": "",
-                "residence_id": "",
-            })
+            meters.append(
+                {
+                    "meter_id": "default",
+                    "name": f"{self._hostname}",
+                    "account_number": self._account_number or "Unknown",
+                    "user_id": "",
+                    "residence_id": "",
+                }
+            )
 
         return meters

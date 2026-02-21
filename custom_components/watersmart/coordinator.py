@@ -97,9 +97,9 @@ class WaterSmartUpdateCoordinator(DataUpdateCoordinator[CoordinatorData]):
 
                     # Apply data converters for this meter
                     for converter in self.data_converters:
-                        cast("dict[str, SensorData]", meter_data)[converter.converter_key] = converter(
-                            meter_data
-                        )
+                        cast("dict[str, SensorData]", meter_data)[
+                            converter.converter_key
+                        ] = converter(meter_data)
 
                     result[meter_id] = meter_data
                     _LOGGER.debug("Async update complete for meter %s", meter_id)

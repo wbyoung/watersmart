@@ -140,7 +140,11 @@ class MultiMeterWebPageAnonymizer:
 
     @classmethod
     def _shorten(cls, doc: PageElement) -> PageElement:
-        """Keep only .error-message nodes and the .user-picker block."""
+        """Keep only .error-message nodes and the .user-picker block.
+
+        Returns:
+            The modified document with only target nodes retained.
+        """
         stack = [doc]
 
         while stack:

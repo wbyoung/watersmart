@@ -318,7 +318,7 @@ async def test_switch_meter_unknown_id(
     client = WaterSmartClient(hostname="hptx", username="", password="")
     await client.async_get_available_meters()
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="nonexistent"):
         await client.async_switch_meter("nonexistent")
 
 
@@ -366,8 +366,7 @@ def test_extract_account_number_account_nav_no_title():
 def test_extract_account_number_skips_digits_only():
     """A div.account containing only digits is skipped in the hptx fallback path."""
     soup = BeautifulSoup(
-        '<div class="account">99999</div>'
-        '<div class="account">1234567-8900</div>',
+        '<div class="account">99999</div><div class="account">1234567-8900</div>',
         "html.parser",
     )
     assert WaterSmartClient._extract_account_number(soup) == "1234567-8900"
@@ -386,7 +385,9 @@ def test_extract_meters_link_without_ids_falls_back_to_default():
         "</a>",
         "html.parser",
     )
-    client = WaterSmartClient(hostname="test", username="", password="", session=MagicMock())
+    client = WaterSmartClient(
+        hostname="test", username="", password="", session=MagicMock()
+    )
     client._account_number = "1234567-8900"
     meters = client._extract_meters(soup)
     assert len(meters) == 1
@@ -401,7 +402,9 @@ def test_extract_meters_link_without_inline_div_falls_back_to_default():
         "</a>",
         "html.parser",
     )
-    client = WaterSmartClient(hostname="test", username="", password="", session=MagicMock())
+    client = WaterSmartClient(
+        hostname="test", username="", password="", session=MagicMock()
+    )
     client._account_number = "1234567-8900"
     meters = client._extract_meters(soup)
     assert len(meters) == 1

@@ -8,6 +8,10 @@ from unittest.mock import AsyncMock, PropertyMock, patch
 
 from homeassistant.core import HomeAssistant
 import pytest
+from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+from custom_components.watersmart.client import AuthenticationError
+from custom_components.watersmart.const import DOMAIN
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -26,10 +30,7 @@ def _pre_start_pycares_thread():
         pycares._shutdown_manager.start()
     except (ImportError, AttributeError):
         pass
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.watersmart.client import AuthenticationError
-from custom_components.watersmart.const import DOMAIN
 
 FIXTURES_DIR = Path(__file__).parent.joinpath("fixtures")
 
