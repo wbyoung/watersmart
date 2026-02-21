@@ -9,7 +9,7 @@ import re
 from typing import Any, TypedDict, cast
 
 import aiohttp
-from bs4 import BeautifulSoup, PageElement
+from bs4 import BeautifulSoup
 
 # Account number format will vary between municipality, so
 # match on a string of non-whitespace characters.
@@ -319,9 +319,3 @@ class WaterSmartClient:
             })
 
         return meters
-
-
-def _assert_node(node: PageElement, message: str) -> PageElement:
-    if not node:
-        raise ScrapeError(message)
-    return node
