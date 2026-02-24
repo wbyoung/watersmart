@@ -318,7 +318,7 @@ class WaterSmartClient:
         if not meters:
             meters.append(
                 {
-                    "meter_id": "default",
+                    "meter_id": "surrogate_meter",
                     "name": f"{self._hostname}",
                     "account_number": self._account_number or "Unknown",
                     "user_id": "",
