@@ -13,12 +13,7 @@ It scrapes data from the web interface and provides a few [sensors](#sensors) wi
 _Note: data will not be updated frequenly because the water utilities do not always update
 this data continuously._
 
-## Features
 
-- **Automatic Multi-Meter Detection**: Automatically detects and creates separate devices for each water meter on your account (e.g., residential and irrigation meters)
-- **Individual Meter Tracking**: Each meter gets its own set of sensors for independent monitoring
-- **Backward Compatible**: Works seamlessly with single-meter accounts
-- **Universal HTML Support**: Compatible with all WaterSmart portal variations
 
 ## Installation
 

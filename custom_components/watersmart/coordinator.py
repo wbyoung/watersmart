@@ -23,14 +23,12 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class MeterData(TypedDict, total=False):
-    """Shape of data for a single meter."""
-
+   
     gallons_for_most_recent_hour: SensorData
     gallons_for_most_recent_full_day: SensorData
     hourly: list[UsageRecord]
 
 
-# CoordinatorData is now a dict mapping meter_id to MeterData
 type CoordinatorData = dict[str, MeterData]
 
 
@@ -85,7 +83,7 @@ class WaterSmartUpdateCoordinator(DataUpdateCoordinator[CoordinatorData]):
 
         try:
             async with timeout(30):
-                # Fetch data for each meter sequentially
+                # Fetch data for each meter sequentially, important as we do not want multiple concurrent requests hitting Watersmart.
                 for meter in self.meters:
                     meter_id = meter["meter_id"]
 
