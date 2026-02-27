@@ -263,83 +263,67 @@ class WaterSmartClient:
 
         raise ScrapeError
 
-   def _extract_meters(self, soup: BeautifulSoup) -> list[MeterInfo]:
-    """Extract available meters from HTML.
+    def _extract_meters(self, soup: BeautifulSoup) -> list[MeterInfo]:
+        """Extract available meters from HTML.
 
-    Returns:
-        List of available meters.
-    """
-    meters: list[MeterInfo] = []
+        Returns:
+            List of available meters.
+        """
+        meters: list[MeterInfo] = []
 
-    # Look for userPicker links (multi-meter format)
-    # Note: some utilities (e.g. hptx) use <div> tags with href instead of <a> tags
-    picker_elements = soup.find_all(
-        ["a", "div"], href=re.compile(r"userPicker/pick")
-    )
+        # Look for userPicker links (multi-meter format)
+        picker_links = soup.find_all("a", href=re.compile(r"userPicker/pick"))
 
-    for element in picker_elements:
-        href = element.get("href", "")
+        for link in picker_links:
+            href = link.get("href", "")
 
-        # Skip combined summary
-        if "combined=1" in href or "combined=0" not in href:
-            continue
+            # Skip combined summary
+            if "combined=1" in href or "combined=0" not in href:
+                continue
 
-        # Extract userID and residenceID
-        user_id_match = re.search(r"userID=(\d+)", href)
-        residence_id_match = re.search(r"residenceID=(\d+)", href)
+            # Extract userID and residenceID
+            user_id_match = re.search(r"userID=(\d+)", href)
+            residence_id_match = re.search(r"residenceID=(\d+)", href)
 
-        if not user_id_match or not residence_id_match:
-            continue
+            if user_id_match and residence_id_match:
+                user_id = user_id_match.group(1)
+                residence_id = residence_id_match.group(1)
 
-        user_id = user_id_match.group(1)
-        residence_id = residence_id_match.group(1)
+                # Get meter name and account number
+                inline_div = link.find("div", class_="inline")
+                if inline_div:
+                    name_h3 = inline_div.find("h3")
+                    account_div = inline_div.find("div", class_="account")
 
-        # Create a unique meter_id from user_id and residence_id
-        meter_id = f"{user_id}_{residence_id}"
+                    name = name_h3.get_text(strip=True) if name_h3 else "Unknown"
+                    account = (
+                        account_div.get_text(strip=True)
+                        if account_div
+                        else self._account_number or "Unknown"
+                    )
 
-        # Try standard format first: div.inline > h3 + div.account
-        inline_div = element.find("div", class_="inline")
-        if inline_div:
-            name_h3 = inline_div.find("h3")
-            account_div = inline_div.find("div", class_="account")
-            name = name_h3.get_text(strip=True) if name_h3 else "Unknown"
-            account = (
-                account_div.get_text(strip=True)
-                if account_div
-                else self._account_number or "Unknown"
+                    # Create a unique meter_id from user_id and residence_id
+                    meter_id = f"{user_id}_{residence_id}"
+
+                    meter: MeterInfo = {
+                        "meter_id": meter_id,
+                        "name": name,
+                        "account_number": account,
+                        "user_id": user_id,
+                        "residence_id": residence_id,
+                    }
+                    meters.append(meter)
+
+        # If no meters found, create a single default meter (backward compatibility)
+        if not meters:
+            meters.append(
+                {
+                    "meter_id": "default",
+                    "name": f"{self._hostname}",
+                    "account_number": self._account_number or "Unknown",
+                    "user_id": "",
+                    "residence_id": "",
+                }
             )
-        else:
-            # Fallback: hptx style uses <span> elements directly inside the element
-            # Structure: <span>Address</span><span>Account#</span><span>Email</span>
-            spans = element.find_all("span")
-            name = spans[0].get_text(strip=True) if len(spans) > 0 else "Unknown"
-            account = (
-                spans[1].get_text(strip=True)
-                if len(spans) > 1
-                else self._account_number or "Unknown"
-            )
 
-        meter: MeterInfo = {
-            "meter_id": meter_id,
-            "name": name,
-            "account_number": account,
-            "user_id": user_id,
-            "residence_id": residence_id,
-        }
-        meters.append(meter)
-        _LOGGER.debug("Found meter: %s (%s)", meter_id, name)
-
-    # If no meters found, create a single default meter (backward compatibility)
-    if not meters:
-        _LOGGER.debug("No meters found in picker, falling back to surrogate meter")
-        meters.append(
-            {
-                "meter_id": "surrogate_meter",
-                "name": f"{self._hostname}",
-                "account_number": self._account_number or "Unknown",
-                "user_id": "",
-                "residence_id": "",
-            }
-        )
-
-    return meters
+        return meters

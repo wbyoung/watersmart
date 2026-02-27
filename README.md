@@ -62,7 +62,7 @@ Follow the instructions to configure the integration.
 
 The integration creates the following sensors **for each meter** on your account:
 
-### `sensor.watersmart_<unique_id>_gallons_for_most_recent_full_day`
+### `sensor.watersmart_<host>_<username>_<meter_id>_gallons_for_most_recent_full_day`
 
 Gallons of water used on the most recent full day of data available.
 
@@ -71,7 +71,7 @@ Gallons of water used on the most recent full day of data available.
 * `related`: List of related objects with `start` and `gallons` covering the day of data.
 
 
-### `sensor.watersmart_<unique_id>_gallons_for_most_recent_hour`
+### `sensor.watersmart_<host>_<username>_<meter_id>_gallons_for_most_recent_hour`
 
 Gallons of water used on the most recent hour of data available.
 

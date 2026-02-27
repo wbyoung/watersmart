@@ -56,9 +56,8 @@ async def async_setup_entry(  # noqa: RUF029
     coordinator = data.coordinator
 
     # Create sensors for each meter
-    has_multiple_meters = len(coordinator.meters) > 1
     entities = [
-        WaterSmartSensor(coordinator, meter, description, has_multiple_meters)
+        WaterSmartSensor(coordinator, meter, description)
         for meter in coordinator.meters
         for description in SENSOR_TYPES
     ]
@@ -78,7 +77,6 @@ class WaterSmartSensor(CoordinatorEntity[WaterSmartUpdateCoordinator], SensorEnt
         coordinator: WaterSmartUpdateCoordinator,
         meter: dict[str, str],
         description: WaterSmartSensorDescription,
-        has_multiple_meters: bool = False,
     ) -> None:
         """Initialize the sensor."""
         super().__init__(coordinator)
@@ -88,8 +86,7 @@ class WaterSmartSensor(CoordinatorEntity[WaterSmartUpdateCoordinator], SensorEnt
         self._sensor_data = self._get_sensor_data(
             coordinator.data, self._meter_id, description.key
         )
-        meter_id_segment = f"-{self._meter_id}" if has_multiple_meters else ""
-        self._attr_unique_id = f"{coordinator.hostname}-{coordinator.username}{meter_id_segment}-{description.key}".lower()
+        self._attr_unique_id = f"{coordinator.hostname}-{coordinator.username}-{self._meter_id}-{description.key}".lower()
         self._attr_device_info = _get_device_info(
             coordinator.hostname,
             coordinator.username,
