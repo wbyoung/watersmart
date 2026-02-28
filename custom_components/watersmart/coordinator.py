@@ -5,19 +5,10 @@ from collections.abc import Callable
 import datetime as dt
 import functools
 import logging
-import re
 from typing import Any, Protocol, TypedDict, cast
 
 from aiohttp.client_exceptions import ClientConnectorError
-from homeassistant.components.recorder import get_instance
-from homeassistant.components.recorder.models import StatisticData, StatisticMetaData
-from homeassistant.components.recorder.statistics import (
-    async_add_external_statistics,
-    get_last_statistics,
-)
-from homeassistant.const import UnitOfVolume
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util.dt import as_local, get_default_time_zone, start_of_local_day
@@ -31,28 +22,10 @@ EXCEPTIONS = (AuthenticationError, ClientConnectorError)
 _LOGGER = logging.getLogger(__name__)
 
 
-def _to_statistic_slug(value: str) -> str:
-    """Convert a string to a valid statistic ID slug.
-
-    Replaces any character not in [a-z0-9] with an underscore, collapses
-    consecutive underscores, and strips leading/trailing underscores.
-
-    Args:
-        value: The raw string to convert.
-
-    Returns:
-        A slug containing only [a-z0-9_], with no leading/trailing/double underscores.
-    """
-    slug = re.sub(r"[^a-z0-9]", "_", value.lower())
-    slug = re.sub(r"_+", "_", slug)
-    return slug.strip("_")
-
-
 class MeterData(TypedDict, total=False):
 
     gallons_for_most_recent_hour: SensorData
     gallons_for_most_recent_full_day: SensorData
-    total_hourly_usage: SensorData
     hourly: list[UsageRecord]
 
 
@@ -132,115 +105,7 @@ class WaterSmartUpdateCoordinator(DataUpdateCoordinator[CoordinatorData]):
         except EXCEPTIONS as error:
             raise UpdateFailed(error) from error
 
-        # Import statistics outside the API timeout block so a large initial
-        # backfill doesn't race against the 30-second fetch timeout.
-        # Errors here are non-fatal — sensor data is still valid without statistics.
-        for meter in self.meters:
-            if meter["meter_id"] in result:
-                try:
-                    total = await self._async_import_statistics(
-                        meter, result[meter["meter_id"]]["hourly"]
-                    )
-                    if total is not None:
-                        cast("dict[str, SensorData]", result[meter["meter_id"]])[
-                            SensorKey.TOTAL_HOURLY_USAGE
-                        ] = {"state": total, "attrs": {}}
-                except Exception:  # noqa: BLE001
-                    _LOGGER.warning(
-                        "Failed to import statistics for meter %s",
-                        meter["meter_id"],
-                        exc_info=True,
-                    )
-
         return result
-
-    async def _async_import_statistics(
-        self,
-        meter: MeterInfo,
-        records: list[UsageRecord],
-    ) -> float | None:
-        """Import hourly usage statistics into HA recorder.
-
-        On first call, imports the full historical record set. On subsequent
-        calls, only records newer than the last imported timestamp are added.
-
-        Args:
-            meter: The meter whose data is being imported.
-            records: All hourly usage records returned by the API.
-
-        Returns:
-            The cumulative running sum of gallons, or None if the recorder is
-            unavailable.
-        """
-        try:
-            recorder_instance = get_instance(self.hass)
-        except (HomeAssistantError, KeyError):
-            _LOGGER.debug(
-                "Recorder not available, skipping statistics import for meter %s",
-                meter["meter_id"],
-            )
-            return None
-
-        meter_id = meter["meter_id"]
-        statistic_id = (
-            f"{DOMAIN}:"
-            f"{_to_statistic_slug(self.hostname)}_"
-            f"{_to_statistic_slug(meter_id)}_hourly_usage"
-        )
-
-        # Find the last imported record so we only push new data.
-        last_stats = await recorder_instance.async_add_executor_job(
-            functools.partial(
-                get_last_statistics, self.hass, 1, statistic_id, False, {"sum"}
-            )
-        )
-
-        last_timestamp: float | None = None
-        running_sum: float = 0.0
-
-        if last_stats and statistic_id in last_stats:
-            last_stat = last_stats[statistic_id][0]
-            last_timestamp = last_stat["start"]  # already a Unix float timestamp
-            running_sum = last_stat.get("sum") or 0.0
-
-        new_records = [
-            r for r in records
-            if last_timestamp is None or r["read_datetime"] > last_timestamp
-        ]
-
-        if not new_records:
-            return running_sum
-
-        _LOGGER.debug(
-            "Importing %d new statistics records for meter %s",
-            len(new_records),
-            meter_id,
-        )
-
-        stat_data: list[StatisticData] = []
-        for record in new_records:
-            gallons = _record_gallons(record)
-            running_sum += gallons
-            start = dt.datetime.fromtimestamp(record["read_datetime"], tz=dt.UTC)
-            stat_data.append(
-                StatisticData(
-                    start=start,
-                    mean=gallons,
-                    sum=running_sum,
-                )
-            )
-
-        metadata = StatisticMetaData(
-            has_mean=True,
-            has_sum=True,
-            name=f"WaterSmart {meter['name']} Hourly Usage",
-            source=DOMAIN,
-            statistic_id=statistic_id,
-            unit_of_measurement=UnitOfVolume.GALLONS,
-        )
-
-        async_add_external_statistics(self.hass, metadata, stat_data)
-        return running_sum
 
 
 def _get_device_info(

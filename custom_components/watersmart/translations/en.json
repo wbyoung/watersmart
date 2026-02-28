@@ -27,9 +27,6 @@
             },
             "gallons_for_most_recent_hour": {
                 "name": "Most recent hour usage"
-            },
-            "total_hourly_usage": {
-                "name": "Total usage"
             }
         }
     },
