@@ -49,9 +49,10 @@ def _to_statistic_slug(value: str) -> str:
 
 
 class MeterData(TypedDict, total=False):
-   
+
     gallons_for_most_recent_hour: SensorData
     gallons_for_most_recent_full_day: SensorData
+    total_hourly_usage: SensorData
     hourly: list[UsageRecord]
 
 
@@ -137,9 +138,13 @@ class WaterSmartUpdateCoordinator(DataUpdateCoordinator[CoordinatorData]):
         for meter in self.meters:
             if meter["meter_id"] in result:
                 try:
-                    await self._async_import_statistics(
+                    total = await self._async_import_statistics(
                         meter, result[meter["meter_id"]]["hourly"]
                     )
+                    if total is not None:
+                        cast("dict[str, SensorData]", result[meter["meter_id"]])[
+                            SensorKey.TOTAL_HOURLY_USAGE
+                        ] = {"state": total, "attrs": {}}
                 except Exception:  # noqa: BLE001
                     _LOGGER.warning(
                         "Failed to import statistics for meter %s",
@@ -153,7 +158,7 @@ class WaterSmartUpdateCoordinator(DataUpdateCoordinator[CoordinatorData]):
         self,
         meter: MeterInfo,
         records: list[UsageRecord],
-    ) -> None:
+    ) -> float | None:
         """Import hourly usage statistics into HA recorder.
 
         On first call, imports the full historical record set. On subsequent
@@ -162,6 +167,10 @@ class WaterSmartUpdateCoordinator(DataUpdateCoordinator[CoordinatorData]):
         Args:
             meter: The meter whose data is being imported.
             records: All hourly usage records returned by the API.
+
+        Returns:
+            The cumulative running sum of gallons, or None if the recorder is
+            unavailable.
         """
         try:
             recorder_instance = get_instance(self.hass)
@@ -170,7 +179,7 @@ class WaterSmartUpdateCoordinator(DataUpdateCoordinator[CoordinatorData]):
                 "Recorder not available, skipping statistics import for meter %s",
                 meter["meter_id"],
             )
-            return
+            return None
 
         meter_id = meter["meter_id"]
         statistic_id = (
@@ -200,7 +209,7 @@ class WaterSmartUpdateCoordinator(DataUpdateCoordinator[CoordinatorData]):
         ]
 
         if not new_records:
-            return
+            return running_sum
 
         _LOGGER.debug(
             "Importing %d new statistics records for meter %s",
@@ -231,6 +240,7 @@ class WaterSmartUpdateCoordinator(DataUpdateCoordinator[CoordinatorData]):
         )
 
         async_add_external_statistics(self.hass, metadata, stat_data)
+        return running_sum
 
 
 def _get_device_info(

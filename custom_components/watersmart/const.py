@@ -15,3 +15,4 @@ class SensorKey(StrEnum):
 
     GALLONS_FOR_MOST_RECENT_HOUR = auto()
     GALLONS_FOR_MOST_RECENT_FULL_DAY_KEY = auto()
+    TOTAL_HOURLY_USAGE = auto()
