@@ -117,6 +117,15 @@ class WaterSmartSensor(CoordinatorEntity[WaterSmartUpdateCoordinator], SensorEnt
         )
 
     @property
+    def state(self) -> str | int | float | None:
+        """Return the state rounded to one decimal place."""
+        value = super().state
+        if isinstance(value, float):
+            rounded = round(value, 1)
+            return 0 if rounded == 0 else rounded
+        return value
+
+    @property
     def native_value(self) -> str | int | float | None:
         """Return the state."""
         return self.entity_description.value_fn(self._sensor_data["state"])
