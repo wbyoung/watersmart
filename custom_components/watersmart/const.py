@@ -8,6 +8,7 @@ ATTRIBUTION: Final = "Data scraped from WaterSmart"
 DOMAIN: Final = "watersmart"
 MANUFACTURER: Final = "WaterSmart by VertexOne"
 DEFAULT_SCAN_INTERVAL = timedelta(hours=1)
+PSEUDO_METER_ID: Final = "pseudo"
 
 
 class SensorKey(StrEnum):

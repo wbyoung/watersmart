@@ -11,13 +11,31 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.const import UnitOfVolume
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import WaterSmartConfigEntry
-from .const import ATTRIBUTION, SensorKey
-from .coordinator import CoordinatorData, WaterSmartUpdateCoordinator
+from .const import ATTRIBUTION, DOMAIN, MANUFACTURER, PSEUDO_METER_ID, SensorKey
+from .coordinator import MeterData, WaterSmartUpdateCoordinator
 from .types import SensorData
+
+
+def _get_device_info(
+    hostname: str, username: str, meter_id: str = PSEUDO_METER_ID, meter_name: str = ""
+) -> DeviceInfo:
+    """Get device info.
+
+    Returns:
+        The device info.
+    """
+    display_name = meter_name or hostname
+    return DeviceInfo(
+        entry_type=DeviceEntryType.SERVICE,
+        identifiers={(DOMAIN, f"{hostname}-{username}-{meter_id}")},
+        manufacturer=MANUFACTURER,
+        name=f"WaterSmart ({display_name})",
+    )
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -51,12 +69,15 @@ async def async_setup_entry(  # noqa: RUF029
     entry: WaterSmartConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up OpenWeatherMap sensor entities based on a config entry."""
+    """Set up WaterSmart sensor entities based on a config entry."""
     data = entry.runtime_data
     coordinator = data.coordinator
 
-    entities: list[WaterSmartSensor] = [
-        WaterSmartSensor(coordinator, description) for description in SENSOR_TYPES
+    # Create sensors for each meter
+    entities = [
+        WaterSmartSensor(coordinator, meter, description)
+        for meter in coordinator.meters
+        for description in SENSOR_TYPES
     ]
 
     async_add_entities(entities)
@@ -72,17 +93,37 @@ class WaterSmartSensor(CoordinatorEntity[WaterSmartUpdateCoordinator], SensorEnt
     def __init__(
         self,
         coordinator: WaterSmartUpdateCoordinator,
+        meter: dict[str, str],
         description: WaterSmartSensorDescription,
     ) -> None:
         """Initialize the sensor."""
         super().__init__(coordinator)
 
         self.entity_description = description
-        self._sensor_data = self._get_sensor_data(coordinator.data, description.key)
-        self._attr_unique_id = (
-            f"{coordinator.hostname}-{coordinator.username}-{description.key}".lower()
+        self._meter_id = meter["meter_id"]
+        self._sensor_data = self._get_sensor_data(
+            coordinator.data, self._meter_id, description.key
         )
-        self._attr_device_info = coordinator.device_info
+        if self._meter_id == PSEUDO_METER_ID:
+            # Single-meter account: use original format for backward compatibility
+            self._attr_unique_id = f"{coordinator.hostname}-{coordinator.username}-{description.key}".lower()
+        else:
+            self._attr_unique_id = f"{coordinator.hostname}-{coordinator.username}-{self._meter_id}-{description.key}".lower()
+        self._attr_device_info = _get_device_info(
+            coordinator.hostname,
+            coordinator.username,
+            meter["meter_id"],
+            meter["name"],
+        )
+
+    @property
+    def state(self) -> str | int | float | None:
+        """Return the state rounded to one decimal place."""
+        value = cast("str | int | float | None", super().state)
+        if isinstance(value, float):
+            rounded = round(value, 1)
+            return 0 if rounded == 0 else rounded
+        return value
 
     @property
     def native_value(self) -> str | int | float | None:
@@ -98,13 +139,14 @@ class WaterSmartSensor(CoordinatorEntity[WaterSmartUpdateCoordinator], SensorEnt
     def _handle_coordinator_update(self) -> None:
         """Handle data update."""
         self._sensor_data = self._get_sensor_data(
-            self.coordinator.data, self.entity_description.key
+            self.coordinator.data, self._meter_id, self.entity_description.key
         )
         super()._handle_coordinator_update()
 
     @staticmethod
     def _get_sensor_data(
-        coordinator_data: CoordinatorData,
+        coordinator_data: dict[str, MeterData],
+        meter_id: str,
         kind: SensorKey,
     ) -> SensorData:
         """Get sensor data.
@@ -112,4 +154,7 @@ class WaterSmartSensor(CoordinatorEntity[WaterSmartUpdateCoordinator], SensorEnt
         Returns:
             The actual sensor data.
         """
-        return cast("dict[str, SensorData]", coordinator_data)[kind]
+        meter_data = coordinator_data.get(meter_id, {})
+        return cast("dict[str, SensorData]", meter_data).get(
+            kind, {"state": None, "attrs": {}}
+        )

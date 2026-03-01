@@ -45,13 +45,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: WaterSmartConfigEntry) -
     session = async_get_clientsession(hass)
     watersmart = WaterSmartClient(hostname, username, password, session=session)
 
+    # Get available meters by authenticating first
+    available_meters = await watersmart.async_get_available_meters()
+
+    # Create a single coordinator for all meters
     coordinator = WaterSmartUpdateCoordinator(
         hass,
         watersmart,
         hostname,
         username,
+        meters=available_meters,
     )
-
     await coordinator.async_config_entry_first_refresh()
 
     entry.runtime_data = WaterSmartData(
