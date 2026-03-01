@@ -9,12 +9,11 @@ from typing import Any, Protocol, TypedDict, cast
 
 from aiohttp.client_exceptions import ClientConnectorError
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util.dt import as_local, get_default_time_zone, start_of_local_day
 
 from .client import AuthenticationError, MeterInfo, UsageRecord, WaterSmartClient
-from .const import DEFAULT_SCAN_INTERVAL, DOMAIN, MANUFACTURER, SensorKey
+from .const import DEFAULT_SCAN_INTERVAL, PSEUDO_METER_ID, SensorKey
 from .types import SensorData
 
 EXCEPTIONS = (AuthenticationError, ClientConnectorError)
@@ -23,6 +22,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class MeterData(TypedDict, total=False):
+    """Meter data from WaterSmart."""
 
     gallons_for_most_recent_hour: SensorData
     gallons_for_most_recent_full_day: SensorData
@@ -89,11 +89,10 @@ class WaterSmartUpdateCoordinator(DataUpdateCoordinator[CoordinatorData]):
 
                     meter_data: MeterData = {
                         "hourly": await self.watersmart.async_get_hourly_data(
-                            meter_id=meter_id if meter_id != "default" else None
+                            meter_id=meter_id if meter_id != PSEUDO_METER_ID else None
                         ),
                     }
 
-                    # Apply data converters for this meter
                     for converter in self.data_converters:
                         cast("dict[str, SensorData]", meter_data)[
                             converter.converter_key
@@ -106,23 +105,6 @@ class WaterSmartUpdateCoordinator(DataUpdateCoordinator[CoordinatorData]):
             raise UpdateFailed(error) from error
 
         return result
-
-
-def _get_device_info(
-    hostname: str, username: str, meter_id: str = "default", meter_name: str = ""
-) -> DeviceInfo:
-    """Get device info.
-
-    Returns:
-        The device info.
-    """
-    display_name = meter_name or hostname
-    return DeviceInfo(
-        entry_type=DeviceEntryType.SERVICE,
-        identifiers={(DOMAIN, f"{hostname}-{username}-{meter_id}")},
-        manufacturer=MANUFACTURER,
-        name=f"WaterSmart ({display_name})",
-    )
 
 
 def _from_timestamp(timestamp: int) -> dt.datetime:

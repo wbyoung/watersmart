@@ -9,7 +9,7 @@ import pytest
 from syrupy.assertion import SnapshotAssertion
 import voluptuous as vol
 
-from custom_components.watersmart.const import DOMAIN
+from custom_components.watersmart.const import DOMAIN, PSEUDO_METER_ID
 from custom_components.watersmart.services import (
     ATTR_CONFIG_ENTRY,
     ATTR_METER_ID,
@@ -164,11 +164,36 @@ async def test_service_with_valid_meter_id(
     result = await hass.services.async_call(
         DOMAIN,
         HOURLY_HISTORY_SERVICE_NAME,
-        {ATTR_CONFIG_ENTRY: mock_config_entry.entry_id, ATTR_METER_ID: "default"},
+        {ATTR_CONFIG_ENTRY: mock_config_entry.entry_id, ATTR_METER_ID: PSEUDO_METER_ID},
         blocking=True,
         return_response=True,
     )
     assert result is not None
+
+
+@pytest.mark.usefixtures("init_integration")
+async def test_service_requires_meter_id_for_multiple_meters(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+    mock_watersmart_client,
+) -> None:
+    """Service call without meter_id fails when multiple meters are configured."""
+    mock_watersmart_client.async_get_available_meters.return_value = [
+        {"meter_id": "111222", "name": "Meter A", "account_number": "A", "user_id": "111", "residence_id": "222"},
+        {"meter_id": "333444", "name": "Meter B", "account_number": "B", "user_id": "333", "residence_id": "444"},
+    ]
+    # Re-setup to pick up multiple meters
+    await hass.config_entries.async_reload(mock_config_entry.entry_id)
+    await hass.async_block_till_done()
+
+    with pytest.raises(ServiceValidationError, match="Multiple meters found"):
+        await hass.services.async_call(
+            DOMAIN,
+            HOURLY_HISTORY_SERVICE_NAME,
+            {ATTR_CONFIG_ENTRY: mock_config_entry.entry_id},
+            blocking=True,
+            return_response=True,
+        )
 
 
 @pytest.mark.usefixtures("init_integration")

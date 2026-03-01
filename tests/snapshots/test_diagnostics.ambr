@@ -2,7 +2,7 @@
 # name: test_entry_diagnostics
   dict({
     'data': dict({
-      'default': dict({
+      'pseudo': dict({
         <SensorKey.GALLONS_FOR_MOST_RECENT_FULL_DAY_KEY: 'gallons_for_most_recent_full_day_key'>: dict({
           'attrs': dict({
             'related': list([

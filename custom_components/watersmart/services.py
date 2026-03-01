@@ -126,8 +126,12 @@ def __get_coordinator_and_meter(
                     "meter_id": meter_id,
                 },
             )
+    elif len(coordinator.meters) > 1:
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key="meter_id_required",
+        )
     else:
-        # Use first meter if no meter_id specified
         meter_id = coordinator.meters[0]["meter_id"]
 
     return coordinator, meter_id

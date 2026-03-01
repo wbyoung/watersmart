@@ -11,13 +11,31 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.const import UnitOfVolume
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import WaterSmartConfigEntry
-from .const import ATTRIBUTION, SensorKey
-from .coordinator import MeterData, WaterSmartUpdateCoordinator, _get_device_info
+from .const import ATTRIBUTION, DOMAIN, MANUFACTURER, PSEUDO_METER_ID, SensorKey
+from .coordinator import MeterData, WaterSmartUpdateCoordinator
 from .types import SensorData
+
+
+def _get_device_info(
+    hostname: str, username: str, meter_id: str = PSEUDO_METER_ID, meter_name: str = ""
+) -> DeviceInfo:
+    """Get device info.
+
+    Returns:
+        The device info.
+    """
+    display_name = meter_name or hostname
+    return DeviceInfo(
+        entry_type=DeviceEntryType.SERVICE,
+        identifiers={(DOMAIN, f"{hostname}-{username}-{meter_id}")},
+        manufacturer=MANUFACTURER,
+        name=f"WaterSmart ({display_name})",
+    )
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -86,7 +104,11 @@ class WaterSmartSensor(CoordinatorEntity[WaterSmartUpdateCoordinator], SensorEnt
         self._sensor_data = self._get_sensor_data(
             coordinator.data, self._meter_id, description.key
         )
-        self._attr_unique_id = f"{coordinator.hostname}-{coordinator.username}-{self._meter_id}-{description.key}".lower()
+        if self._meter_id == PSEUDO_METER_ID:
+            # Single-meter account: use original format for backward compatibility
+            self._attr_unique_id = f"{coordinator.hostname}-{coordinator.username}-{description.key}".lower()
+        else:
+            self._attr_unique_id = f"{coordinator.hostname}-{coordinator.username}-{self._meter_id}-{description.key}".lower()
         self._attr_device_info = _get_device_info(
             coordinator.hostname,
             coordinator.username,

@@ -11,6 +11,8 @@ from typing import Any, TypedDict, cast
 import aiohttp
 from bs4 import BeautifulSoup
 
+from .const import PSEUDO_METER_ID
+
 # Account number format will vary between municipality, so
 # match on a string of non-whitespace characters.
 ACCOUNT_NUMBER_RE = re.compile(r"^\S+$")
@@ -94,7 +96,6 @@ class WaterSmartClient:
         self._account_number: str | None = None
         self._authenticated_at: dt.datetime | None = None
         self._meters: list[MeterInfo] = []
-        self._current_meter_id: str | None = None
 
     @_authenticated
     async def async_get_account_number(self) -> str | None:
@@ -139,7 +140,6 @@ class WaterSmartClient:
                 "returnUrlOverride": "",
             },
         )
-        self._current_meter_id = meter_id
 
     @_authenticated
     async def async_get_hourly_data(
@@ -154,7 +154,7 @@ class WaterSmartClient:
         Returns:
             The objects in the response data.
         """
-        if meter_id and meter_id != self._current_meter_id:
+        if meter_id:
             await self.async_switch_meter(meter_id)
 
         session = self._session
@@ -220,7 +220,6 @@ class WaterSmartClient:
             raise InvalidAccountNumberError("invalid account number: " + account_number)
 
         self._account_number = account_number
-        self._current_meter_id = None
 
         # Extract available meters
         self._meters = self._extract_meters(soup)
@@ -303,7 +302,7 @@ class WaterSmartClient:
                     )
 
                     # Create a unique meter_id from user_id and residence_id
-                    meter_id = f"{user_id}_{residence_id}"
+                    meter_id = f"{user_id}{residence_id}"
 
                     meter: MeterInfo = {
                         "meter_id": meter_id,
@@ -314,11 +313,11 @@ class WaterSmartClient:
                     }
                     meters.append(meter)
 
-        # If no meters found, create a single default meter (backward compatibility)
+        # If no meters found, create a pseudo meter (single-meter account)
         if not meters:
             meters.append(
                 {
-                    "meter_id": "default",
+                    "meter_id": PSEUDO_METER_ID,
                     "name": f"{self._hostname}",
                     "account_number": self._account_number or "Unknown",
                     "user_id": "",

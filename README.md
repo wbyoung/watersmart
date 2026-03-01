@@ -60,9 +60,11 @@ Follow the instructions to configure the integration.
 
 ## Sensors
 
-The integration creates the following sensors **for each meter** on your account:
+The integration creates the following sensors **for each meter** on your account. Entity IDs are
+derived from the meter's address (for multi-meter accounts) or the hostname (for single-meter
+accounts).
 
-### `sensor.watersmart_<host>_<username>_<meter_id>_gallons_for_most_recent_full_day`
+### Most recent full day usage
 
 Gallons of water used on the most recent full day of data available.
 
@@ -71,7 +73,7 @@ Gallons of water used on the most recent full day of data available.
 * `related`: List of related objects with `start` and `gallons` covering the day of data.
 
 
-### `sensor.watersmart_<host>_<username>_<meter_id>_gallons_for_most_recent_hour`
+### Most recent hour usage
 
 Gallons of water used on the most recent hour of data available.
 
@@ -81,17 +83,21 @@ Gallons of water used on the most recent hour of data available.
 * `related`: List of related objects with `start` and `gallons` starting from the most recent
   hour.
 
-### Multi-Meter Example
+### Examples
 
-If you have two meters (e.g., "Address, SFR" and "Address, Irrigation-Only"), you'll see:
+**Single meter** (hostname `bendoregon`):
+- `sensor.watersmart_bendoregon_most_recent_hour_usage`
+- `sensor.watersmart_bendoregon_most_recent_full_day_usage`
 
-**Device 1: WaterSmart (Address, SFR)**
-- `sensor.watersmart_hptx_user_email_com_7176_11498_gallons_for_most_recent_hour`
-- `sensor.watersmart_hptx_user_email_com_7176_11498_gallons_for_most_recent_full_day`
+**Multiple meters** (e.g., "1234 Bluebird SFR" and "1234 Bluebird IrrigationOnly"):
 
-**Device 2: WaterSmart (Address, Irrigation-Only)**
-- `sensor.watersmart_hptx_user_email_com_13089_11499_gallons_for_most_recent_hour`
-- `sensor.watersmart_hptx_user_email_com_13089_11499_gallons_for_most_recent_full_day`
+*Device 1: WaterSmart (1234 Bluebird SFR)*
+- `sensor.watersmart_1234_bluebird_sfr_most_recent_hour_usage`
+- `sensor.watersmart_1234_bluebird_sfr_most_recent_full_day_usage`
+
+*Device 2: WaterSmart (1234 Bluebird IrrigationOnly)*
+- `sensor.watersmart_1234_bluebird_irrigationonly_most_recent_hour_usage`
+- `sensor.watersmart_1234_bluebird_irrigationonly_most_recent_full_day_usage`
 
 Each meter is tracked independently with its own device and sensors.
 
@@ -104,7 +110,7 @@ Fetches hourly water usage. The `config_entry` value be found using the _Service
 #### Service Data Attributes
 
 * `config_entry`: **required** Config entry to use. Example: `1b4a46c6cba0677bbfb5a8c53e8618b0`.
-* `meter_id`: Specific meter ID to query (e.g., `7176_11498`). If not specified, returns data from the first available meter. This is useful when you have multiple meters.
+* `meter_id`: Specific meter ID to query (e.g., `717611498`). Required when the account has multiple meters.
 * `cached`: Accept data from the integration cache instead of re-fetching. Defaults to `false`.
 * `start`: Start time to history. Example: `2024-06-19T19:30:00-07:00`.
 * `end`: End time to history. Example: `2024-06-19T21:30:00-07:00`.
@@ -117,7 +123,7 @@ To get history for a specific meter when you have multiple:
 service: watersmart.get_hourly_history
 data:
   config_entry: 1b4a46c6cba0677bbfb5a8c53e8618b0
-  meter_id: "7176_11498"  # Irrigation meter
+  meter_id: "717611498"  # Irrigation meter
   start: "2024-06-19T00:00:00-07:00"
   end: "2024-06-19T23:59:59-07:00"
 ```

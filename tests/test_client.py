@@ -12,6 +12,7 @@ from custom_components.watersmart.client import (
     ScrapeError,
     WaterSmartClient,
 )
+from custom_components.watersmart.const import PSEUDO_METER_ID
 
 
 async def test_login_success(hass: HomeAssistant, mock_aiohttp_session, fixture_loader):
@@ -264,14 +265,14 @@ async def test_multimeter_available_meters(
 
     assert meters == [
         {
-            "meter_id": "13089_11499",
+            "meter_id": "1308911499",
             "name": "123 N Main St",
             "account_number": "1234567-8900",
             "user_id": "13089",
             "residence_id": "11499",
         },
         {
-            "meter_id": "13090_11500",
+            "meter_id": "1309011500",
             "name": "456 S Oak Ave",
             "account_number": "9876543-2100",
             "user_id": "13090",
@@ -294,7 +295,7 @@ async def test_switch_meter(hass: HomeAssistant, mock_aiohttp_session, fixture_l
     client = WaterSmartClient(hostname="hptx", username="", password="")
     await client.async_get_available_meters()  # authenticate and populate _meters
 
-    await client.async_switch_meter("13089_11499")
+    await client.async_switch_meter("1308911499")
 
     mock_aiohttp_session.get.assert_called_once_with(
         "https://hptx.watersmart.com/index.php/userPicker/pick",
@@ -334,8 +335,7 @@ async def test_async_get_hourly_data_with_meter_id(
     )
 
     client = WaterSmartClient(hostname="hptx", username="", password="")
-    # _current_meter_id is None after auth, so any meter_id triggers async_switch_meter
-    await client.async_get_hourly_data(meter_id="13090_11500")
+    await client.async_get_hourly_data(meter_id="1309011500")
 
     mock_aiohttp_session.get.assert_any_call(
         "https://hptx.watersmart.com/index.php/userPicker/pick",
@@ -377,7 +377,7 @@ def test_extract_account_number_skips_digits_only():
 # ---------------------------------------------------------------------------
 
 
-def test_extract_meters_link_without_ids_falls_back_to_default():
+def test_extract_meters_link_without_ids_falls_back_to_pseudo():
     """A combined=0 userPicker link missing userID/residenceID is skipped."""
     soup = BeautifulSoup(
         '<a href="/index.php/userPicker/pick?combined=0&returnUrlOverride=">'
@@ -391,10 +391,10 @@ def test_extract_meters_link_without_ids_falls_back_to_default():
     client._account_number = "1234567-8900"
     meters = client._extract_meters(soup)
     assert len(meters) == 1
-    assert meters[0]["meter_id"] == "default"
+    assert meters[0]["meter_id"] == PSEUDO_METER_ID
 
 
-def test_extract_meters_link_without_inline_div_falls_back_to_default():
+def test_extract_meters_link_without_inline_div_falls_back_to_pseudo():
     """A userPicker link with valid IDs but no div.inline is skipped."""
     soup = BeautifulSoup(
         '<a href="/index.php/userPicker/pick?userID=123&residenceID=456&combined=0&returnUrlOverride=">'
@@ -408,4 +408,4 @@ def test_extract_meters_link_without_inline_div_falls_back_to_default():
     client._account_number = "1234567-8900"
     meters = client._extract_meters(soup)
     assert len(meters) == 1
-    assert meters[0]["meter_id"] == "default"
+    assert meters[0]["meter_id"] == PSEUDO_METER_ID
