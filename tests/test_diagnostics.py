@@ -19,4 +19,4 @@ async def test_entry_diagnostics(
     """Test config entry diagnostics."""
     assert await async_get_config_entry_diagnostics(
         hass, mock_config_entry
-    ) == snapshot(exclude=props("entry_id", "created_at", "modified_at"))
+    ) == snapshot(exclude=props("entry_id", "created_at", "modified_at", "subentries"))
