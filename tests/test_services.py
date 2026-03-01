@@ -179,8 +179,20 @@ async def test_service_requires_meter_id_for_multiple_meters(
 ) -> None:
     """Service call without meter_id fails when multiple meters are configured."""
     mock_watersmart_client.async_get_available_meters.return_value = [
-        {"meter_id": "111222", "name": "Meter A", "account_number": "A", "user_id": "111", "residence_id": "222"},
-        {"meter_id": "333444", "name": "Meter B", "account_number": "B", "user_id": "333", "residence_id": "444"},
+        {
+            "meter_id": "111222",
+            "name": "Meter A",
+            "account_number": "A",
+            "user_id": "111",
+            "residence_id": "222",
+        },
+        {
+            "meter_id": "333444",
+            "name": "Meter B",
+            "account_number": "B",
+            "user_id": "333",
+            "residence_id": "444",
+        },
     ]
     # Re-setup to pick up multiple meters
     await hass.config_entries.async_reload(mock_config_entry.entry_id)
