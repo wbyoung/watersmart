@@ -142,8 +142,17 @@ def test_state_property_rounds_float():
     sensor._sensor_data = {"state": 14.3, "attrs": {}}
     sensor.entity_description = SENSOR_TYPES[0]
 
-    with patch.object(SensorEntity, "state", new_callable=PropertyMock, return_value=54.1313885112):
+    with patch.object(
+        SensorEntity, "state", new_callable=PropertyMock, return_value=54.1313885112
+    ):
         assert sensor.state == 54.1
 
-    with patch.object(SensorEntity, "state", new_callable=PropertyMock, return_value=0.0):
+    with patch.object(
+        SensorEntity, "state", new_callable=PropertyMock, return_value=0.0
+    ):
         assert sensor.state == 0
+
+    with patch.object(
+        SensorEntity, "state", new_callable=PropertyMock, return_value=None
+    ):
+        assert sensor.state is None
