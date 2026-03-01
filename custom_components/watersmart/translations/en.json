@@ -29,7 +29,7 @@
                 "name": "Most recent hour usage"
             },
             "total_hourly_usage": {
-                "name": "Total usage"
+                "name": "Cumulative water usage"
             }
         }
     },

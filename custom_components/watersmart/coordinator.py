@@ -169,8 +169,8 @@ class WaterSmartUpdateCoordinator(DataUpdateCoordinator[CoordinatorData]):
 
         if last_stats and statistic_id in last_stats:
             last_stat = last_stats[statistic_id][0]
-            last_timestamp = last_stat["start"]  # already a Unix float timestamp
-            running_sum = last_stat.get("sum") or 0.0
+            last_timestamp = float(last_stat["start"])
+            running_sum = last_stat.get("sum") if last_stat.get("sum") is not None else 0.0
 
         new_records = [
             r for r in records
