@@ -128,7 +128,7 @@ class WaterSmartUpdateCoordinator(DataUpdateCoordinator[CoordinatorData]):
                     "state": total,
                     "attrs": {},
                 }
-        except Exception:  # noqa: BLE001
+        except Exception:
             _LOGGER.warning("Failed to import statistics", exc_info=True)
 
         return result
@@ -160,7 +160,7 @@ class WaterSmartUpdateCoordinator(DataUpdateCoordinator[CoordinatorData]):
         # Find the last imported record so we only push new data.
         last_stats = await recorder_instance.async_add_executor_job(
             functools.partial(
-                get_last_statistics, self.hass, 1, statistic_id, False, {"sum"}
+                get_last_statistics, self.hass, 1, statistic_id, convert_units=False, types={"sum"}
             )
         )
 

@@ -155,7 +155,7 @@ class WaterSmartClient:
         errors = [error.text.strip() for error in soup.select(".error-message")]
         errors = [error for error in errors if error]
 
-        if len(errors):
+        if errors:
             raise AuthenticationError(errors)
 
         account = _assert_node(
