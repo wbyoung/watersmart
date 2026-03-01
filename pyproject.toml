@@ -1,4 +1,5 @@
 [project]
+name = "watersmart"
 requires-python = ">=3.13"
 
 [tool.coverage.run]
@@ -133,6 +134,9 @@ split-on-trailing-comma = false
 ".github/*.py" = [
   "ANN",      # flake8-annotations
   "INP001",   # file {filename} is part of an implicit namespace package. Add an __init__.py
+  ]
+"custom_components/watersmart/__init__.py" = [
+  "RUF067",   # HA integration __init__.py intentionally contains setup functions, not just re-exports
   ]
 "tests/**" = [
   "ANN001",   # missing type annotation for function argument {name}

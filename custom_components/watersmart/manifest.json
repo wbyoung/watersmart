@@ -1,6 +1,7 @@
 {
   "domain": "watersmart",
   "name": "WaterSmart",
+  "after_dependencies": ["recorder"],
   "codeowners": [
     "@wbyoung"
   ],
