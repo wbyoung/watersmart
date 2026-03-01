@@ -1,12 +1,16 @@
 """Test sensor for simple integration."""
 
 import datetime as dt
+from unittest.mock import PropertyMock, patch
 
+from homeassistant.components.sensor import SensorEntity
 from homeassistant.core import HomeAssistant
 from homeassistant.util.dt import utcnow
 import pytest
 from pytest_homeassistant_custom_component.common import async_fire_time_changed
 from syrupy.assertion import SnapshotAssertion
+
+from custom_components.watersmart.sensor import SENSOR_TYPES, WaterSmartSensor
 
 
 @pytest.fixture
@@ -130,3 +134,16 @@ def test_sensor_update_failure(hass: HomeAssistant, mock_watersmart_client):
     assert recent_hour_sensor_state is None
 
     assert mock_watersmart_client.async_get_hourly_data.call_count == 1
+
+
+def test_state_property_rounds_float():
+    """Test state property rounds float values to 1 decimal place."""
+    sensor = object.__new__(WaterSmartSensor)
+    sensor._sensor_data = {"state": 14.3, "attrs": {}}
+    sensor.entity_description = SENSOR_TYPES[0]
+
+    with patch.object(SensorEntity, "state", new_callable=PropertyMock, return_value=54.1313885112):
+        assert sensor.state == 54.1
+
+    with patch.object(SensorEntity, "state", new_callable=PropertyMock, return_value=0.0):
+        assert sensor.state == 0
