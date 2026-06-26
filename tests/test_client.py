@@ -1,6 +1,6 @@
 """Test client."""
 
-from unittest.mock import AsyncMock, call
+from unittest.mock import ANY, AsyncMock, call
 
 from homeassistant.core import HomeAssistant
 import pytest
@@ -35,9 +35,51 @@ async def test_login_success(hass: HomeAssistant, mock_aiohttp_session, fixture_
                     "email": "test@home-assistant.io",
                     "password": "Passw0rd",
                 },
+                headers=ANY,
             ),
         ]
     )
+
+
+async def test_login_sends_browser_headers(
+    hass: HomeAssistant, mock_aiohttp_session, fixture_loader
+):
+    """Portals/WAFs may reject non-browser clients; login POST must look like a browser."""
+    mock_aiohttp_session.post.return_value.text.return_value = (
+        fixture_loader.login_success_html
+    )
+
+    client = WaterSmartClient(
+        hostname="test",
+        username="test@home-assistant.io",
+        password="Passw0rd",  # noqa: S106
+    )
+
+    await client.async_get_account_number()
+
+    _, kwargs = mock_aiohttp_session.post.call_args
+    headers = kwargs["headers"]
+    assert headers["User-Agent"].startswith("Mozilla/5.0")
+    assert "Accept" in headers
+    assert "Accept-Language" in headers
+
+
+async def test_hourly_data_sends_browser_headers(
+    hass: HomeAssistant, mock_aiohttp_session, fixture_loader
+):
+    """The data request must also look like a browser for a consistent auth flow."""
+    mock_aiohttp_session.post.return_value.text.return_value = (
+        fixture_loader.login_success_html
+    )
+    mock_aiohttp_session.get.return_value.text.return_value = (
+        fixture_loader.realtime_api_response_json
+    )
+
+    client = WaterSmartClient(hostname="test", username="", password="")
+    await client.async_get_hourly_data()
+
+    _, kwargs = mock_aiohttp_session.get.call_args
+    assert kwargs["headers"]["User-Agent"].startswith("Mozilla/5.0")
 
 
 async def test_login_success_with_refreshtoken(
@@ -68,6 +110,7 @@ async def test_login_success_with_refreshtoken(
                     "email": "test@home-assistant.io",
                     "password": "Passw0rd",
                 },
+                headers=ANY,
             ),
         ]
     )
@@ -81,6 +124,7 @@ async def test_login_success_with_refreshtoken(
                     "email": "test@home-assistant.io",
                     "password": "Passw0rd",
                 },
+                headers=ANY,
             ),
         ]
     )
@@ -188,7 +232,10 @@ async def test_async_get_async_get_hourly_data(
 
     mock_aiohttp_session.get.assert_has_calls(
         [
-            call("https://.watersmart.com/index.php/rest/v1/Chart/RealTimeChart"),
+            call(
+                "https://.watersmart.com/index.php/rest/v1/Chart/RealTimeChart",
+                headers=ANY,
+            ),
         ]
     )
 
