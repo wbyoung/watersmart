@@ -5,7 +5,9 @@
     "@wbyoung"
   ],
   "config_flow": true,
-  "dependencies": [],
+  "dependencies": [
+    "recorder"
+  ],
   "documentation": "https://github.com/wbyoung/watersmart",
   "homekit": {},
   "iot_class": "cloud_polling",

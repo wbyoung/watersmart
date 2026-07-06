@@ -52,8 +52,15 @@ def fixture_loader():
 
 
 @pytest.fixture(autouse=True)
-def auto_enable_custom_integrations(enable_custom_integrations):
-    """Enable custom integrations."""
+def auto_enable_custom_integrations(recorder_mock, enable_custom_integrations):
+    """Enable custom integrations, with the recorder set up first.
+
+    ``recorder_mock`` is ordered before ``enable_custom_integrations`` (which
+    pulls in ``hass``) so the recorder's fixtures initialize ahead of the hass
+    fixture, as they require. The integration declares ``recorder`` as a
+    manifest dependency, so HA refuses to set it up without the recorder
+    present.
+    """
     return
 
 
