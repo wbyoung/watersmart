@@ -77,6 +77,38 @@ Gallons of water used on the most recent hour of data available.
 * `related`: List of related objects with `start` and `gallons` starting from the most recent
   hour.
 
+## Energy dashboard
+
+The integration imports the hourly water-usage series into Home Assistant's
+long-term statistics, making it available to the [Energy dashboard's water
+consumption section][energy-water].
+
+Home Assistant stores a consumption series as a running total: every hourly row
+holds both that hour's usage and the cumulative total of all the hours before
+it. WaterSmart reports each hour on its own, so the integration accumulates the
+hourly values into that running total before recording them.
+
+On first run it imports the entire history WaterSmart exposes for the account,
+accumulating from zero. Later refreshes do not recompute the whole total.
+Instead they find the most recent hour already recorded that is old enough to
+have settled — roughly two days back, since WaterSmart keeps revising more
+recent hours — and resume accumulating from that hour's running total,
+re-importing every hour after it. Revisions WaterSmart has made inside that
+window are picked up; older rows are left untouched.
+
+The statistic appears in the Energy dashboard's water-source picker labeled
+`Water consumption (<host>)`. Its `statistic_id` is derived from the config
+entry's internal id (`watersmart:<entry_id>`) rather than from the host or
+username, so re-authenticating or editing either one keeps writing to the same
+series instead of stranding it and starting a new one.
+
+### Known limitations
+
+- Historical corrections that WaterSmart emits more than roughly two days after
+  the fact are not picked up automatically. If this matters for a particular
+  account, removing and re-adding the config entry triggers a fresh full
+  backfill.
+
 ## Services
 
 ### `watersmart.get_hourly_history`
@@ -97,6 +129,7 @@ Icon designed by [bsd studio][bsd-attribution].
 
 [bsd-attribution]: https://thenounproject.com/creator/nesterenko.ruslan
 [config-flow-start]: https://my.home-assistant.io/redirect/config_flow_start/?domain=watersmart
+[energy-water]: https://www.home-assistant.io/docs/energy/water/
 [hacs]: https://hacs.xyz/
 [hacs-repo]: https://github.com/hacs/integration
 [hacs-badge]: https://my.home-assistant.io/badges/hacs_repository.svg
