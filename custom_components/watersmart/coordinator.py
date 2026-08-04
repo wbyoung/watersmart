@@ -235,8 +235,8 @@ def _get_device_info(hostname: str, username: str) -> DeviceInfo:
 
 
 def _from_timestamp(timestamp: int) -> dt.datetime:
-    return dt.datetime.fromtimestamp(timestamp, tz=dt.UTC).replace(
-        tzinfo=get_default_time_zone()
+    return dt.datetime.fromtimestamp(timestamp, tz=dt.UTC).astimezone(
+        get_default_time_zone()
     )
 
 
