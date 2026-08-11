@@ -31,6 +31,7 @@ from homeassistant.components.recorder.models import (
 )
 from homeassistant.const import UnitOfVolume
 from homeassistant.core import HomeAssistant
+from homeassistant.util.dt import get_default_time_zone
 from homeassistant.util.unit_conversion import VolumeConverter
 
 from .client import UsageRecord
@@ -53,16 +54,42 @@ _SUPPORTS_UNIT_CLASS = "unit_class" in StatisticMetaData.__annotations__
 
 
 def _utc_from_epoch(timestamp: float) -> dt.datetime:
-    """Interpret an epoch timestamp as a UTC datetime.
+    """Interpret a recorder epoch timestamp as a UTC datetime.
 
-    Both source representations the import consumes -- the client's
-    ``read_datetime`` and the recorder's ``StatisticsRow["start"]`` -- carry
-    times as epoch seconds; the fold works in UTC datetimes throughout.
+    ``StatisticsRow["start"]`` is a true epoch: the recorder stores the instant.
+    The fold works in UTC datetimes throughout.
+
+    This is *not* how the client's ``read_datetime`` is read -- see
+    :func:`_hour_start_utc`.
 
     Returns:
         The timestamp as a timezone-aware UTC datetime.
     """
     return dt.datetime.fromtimestamp(timestamp, tz=dt.UTC)
+
+
+def _hour_start_utc(read_datetime: float) -> dt.datetime:
+    """Convert a reading's ``read_datetime`` to the UTC instant its hour begins.
+
+    ``read_datetime`` is not a true epoch. The portal encodes the utility's
+    local wall clock as though it were UTC, so the number's digits *are* local
+    time and the value has to be relabeled rather than converted -- the same
+    reading ``coordinator._from_timestamp`` applies.
+
+    The raw series shows this directly: reads are 3600s apart except across DST,
+    where an hour is skipped each spring-forward and repeated each fall-back. A
+    true epoch series of hourly reads would be uniformly spaced.
+
+    Truncation happens in local time, before conversion, so an hour bucket is
+    the utility's hour on utilities whose offset is not a whole number of hours.
+
+    Returns:
+        The start of the reading's hour, as a timezone-aware UTC datetime.
+    """
+    local = dt.datetime.fromtimestamp(read_datetime, tz=dt.UTC).replace(
+        tzinfo=get_default_time_zone()
+    )
+    return local.replace(minute=0, second=0, microsecond=0).astimezone(dt.UTC)
 
 
 def statistic_id_for(entry_id: str) -> str:
@@ -104,11 +131,11 @@ def metadata_for(entry_id: str, hostname: str) -> StatisticMetaData:
 def bucket_records(
     records: Iterable[UsageRecord],
 ) -> list[tuple[dt.datetime, float]]:
-    """Group records by UTC hour.
+    """Group records by the hour they were read in, keyed by UTC instant.
 
     Drops records with ``gallons is None``; sums multiple records that fall
-    within the same UTC hour (sub-hour timestamp jitter in the source data can
-    place two readings in one hour); returns the result sorted chronologically.
+    within the same hour (sub-hour timestamp jitter in the source data can place
+    two readings in one hour); returns the result sorted chronologically.
 
     Returns:
         ``(hour_start_utc, gallons)`` pairs sorted chronologically.
@@ -118,9 +145,7 @@ def bucket_records(
         gallons = record["gallons"]
         if gallons is None:
             continue
-        start = _utc_from_epoch(record["read_datetime"]).replace(
-            minute=0, second=0, microsecond=0
-        )
+        start = _hour_start_utc(record["read_datetime"])
         buckets[start] = buckets.get(start, 0.0) + gallons
     return sorted(buckets.items())
 
