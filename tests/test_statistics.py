@@ -8,6 +8,7 @@ from homeassistant.components.recorder.db_schema import StatisticsMeta
 from homeassistant.components.recorder.models import StatisticMeanType
 from homeassistant.const import UnitOfVolume
 from homeassistant.core import HomeAssistant
+from homeassistant.util.dt import get_default_time_zone
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -77,11 +78,41 @@ def test_metadata_for_is_accepted_by_the_recorder_schema():
 
 
 def _utc(year, month, day, hour):
+    """A UTC instant, as the recorder stores and returns them."""
     return dt.datetime(year, month, day, hour, tzinfo=dt.UTC)
 
 
+def _local(year, month, day, hour):
+    """The UTC instant at a given *local* wall-clock hour.
+
+    Buckets are keyed by UTC instants, but the hour a reading belongs to is the
+    utility's local hour, so this is what ``bucket_records`` returns.
+    """
+    return dt.datetime(
+        year, month, day, hour, tzinfo=get_default_time_zone()
+    ).astimezone(dt.UTC)
+
+
 def _ts(year, month, day, hour, minute=0):
+    """A WaterSmart ``read_datetime``.
+
+    The portal encodes the utility's local wall clock as though it were UTC, so
+    the digits passed here are *local* time, not UTC (see
+    ``statistics._hour_start_utc``).
+    """
     return int(dt.datetime(year, month, day, hour, minute, tzinfo=dt.UTC).timestamp())
+
+
+def _bucket_start(read_datetime: float) -> dt.datetime:
+    """The UTC instant a reading's hour bucket is keyed by.
+
+    ``read_datetime`` carries local wall clock, so the hour is truncated in
+    local time and then converted.
+    """
+    local = dt.datetime.fromtimestamp(read_datetime, tz=dt.UTC).replace(
+        tzinfo=get_default_time_zone()
+    )
+    return local.replace(minute=0, second=0, microsecond=0).astimezone(dt.UTC)
 
 
 def _record(read_datetime: int, gallons: float | None) -> UsageRecord:
@@ -115,8 +146,8 @@ def test_bucket_records_simple_pass_through():
         _record(_ts(2026, 5, 1, 1), 2.0),
     ]
     assert bucket_records(records) == [
-        (_utc(2026, 5, 1, 0), 1.0),
-        (_utc(2026, 5, 1, 1), 2.0),
+        (_local(2026, 5, 1, 0), 1.0),
+        (_local(2026, 5, 1, 1), 2.0),
     ]
 
 
@@ -127,18 +158,18 @@ def test_bucket_records_drops_none_gallons():
         _record(_ts(2026, 5, 1, 2), 3.0),
     ]
     assert bucket_records(records) == [
-        (_utc(2026, 5, 1, 0), 1.0),
-        (_utc(2026, 5, 1, 2), 3.0),
+        (_local(2026, 5, 1, 0), 1.0),
+        (_local(2026, 5, 1, 2), 3.0),
     ]
 
 
 def test_bucket_records_sums_duplicate_hour():
-    # Sub-hour timestamp jitter can land two readings in the same UTC hour.
+    # Sub-hour timestamp jitter can land two readings in the same hour.
     records = [
         _record(_ts(2026, 5, 1, 0, 0), 1.0),
         _record(_ts(2026, 5, 1, 0, 30), 2.5),
     ]
-    assert bucket_records(records) == [(_utc(2026, 5, 1, 0), 3.5)]
+    assert bucket_records(records) == [(_local(2026, 5, 1, 0), 3.5)]
 
 
 def test_bucket_records_sorts_chronologically():
@@ -148,10 +179,47 @@ def test_bucket_records_sorts_chronologically():
         _record(_ts(2026, 5, 1, 1), 2.0),
     ]
     assert bucket_records(records) == [
-        (_utc(2026, 5, 1, 0), 1.0),
-        (_utc(2026, 5, 1, 1), 2.0),
-        (_utc(2026, 5, 1, 2), 3.0),
+        (_local(2026, 5, 1, 0), 1.0),
+        (_local(2026, 5, 1, 1), 2.0),
+        (_local(2026, 5, 1, 2), 3.0),
     ]
+
+
+def test_bucket_records_reads_timestamps_as_local_wall_clock():
+    # The portal's `read_datetime` digits are the utility's local time, so a
+    # reading labelled midnight belongs to the UTC hour midnight *local* falls
+    # in -- not to 00:00 UTC.
+    (start, _gallons) = bucket_records([_record(_ts(2026, 5, 1, 0), 1.0)])[0]
+    assert start == _local(2026, 5, 1, 0)
+    assert start != _utc(2026, 5, 1, 0)
+
+
+def test_bucket_records_spans_the_spring_forward_gap():
+    # Local time skips 02:00 on a spring-forward, and the portal's series skips
+    # it too -- proof the timestamps carry wall clock rather than instants.
+    # Reading them as local keeps the buckets an hour apart across the seam.
+    records = [
+        _record(_ts(2026, 3, 8, 1), 1.0),
+        _record(_ts(2026, 3, 8, 3), 2.0),
+    ]
+    buckets = bucket_records(records)
+    assert [start for start, _ in buckets] == [
+        _local(2026, 3, 8, 1),
+        _local(2026, 3, 8, 3),
+    ]
+    assert buckets[1][0] - buckets[0][0] == dt.timedelta(hours=1)
+
+
+def test_bucket_records_folds_the_repeated_fall_back_hour():
+    # Fall-back repeats 01:00 local, and the portal emits both readings under
+    # the same `read_datetime`. Ambiguous wall clock resolves to the first
+    # (fold=0) occurrence, so the pair lands in one bucket rather than being
+    # spread across two hours or silently dropped.
+    records = [
+        _record(_ts(2026, 11, 1, 1), 1.0),
+        _record(_ts(2026, 11, 1, 1), 2.0),
+    ]
+    assert bucket_records(records) == [(_local(2026, 11, 1, 1), 3.0)]
 
 
 def test_fold_cumulative_empty():
@@ -325,19 +393,14 @@ def warm_anchor(
     cumulative sum of the whole series.
     """
     records = mock_watersmart_client.async_get_hourly_data.return_value
-    last_start = dt.datetime.fromtimestamp(
-        records[-1]["read_datetime"], tz=dt.UTC
-    ).replace(minute=0, second=0, microsecond=0)
+    last_start = _bucket_start(records[-1]["read_datetime"])
     last_sum = sum(r["gallons"] for r in records if r["gallons"] is not None)
     anchor_start = last_start - REFOLD_WINDOW
     anchor_sum = sum(
         r["gallons"]
         for r in records
         if r["gallons"] is not None
-        and dt.datetime.fromtimestamp(r["read_datetime"], tz=dt.UTC).replace(
-            minute=0, second=0, microsecond=0
-        )
-        <= anchor_start
+        and _bucket_start(r["read_datetime"]) <= anchor_start
     )
 
     statistic_id = statistic_id_for(_coordinator(hass).entry_id)
@@ -412,9 +475,7 @@ async def test_warm_path_no_new_buckets_does_not_write(
     """If no buckets are newer than the anchor, the recorder isn't called."""
 
     records = mock_watersmart_client.async_get_hourly_data.return_value
-    last_start = dt.datetime.fromtimestamp(
-        records[-1]["read_datetime"], tz=dt.UTC
-    ).replace(minute=0, second=0, microsecond=0)
+    last_start = _bucket_start(records[-1]["read_datetime"])
     anchor_sum = sum(r["gallons"] for r in records if r["gallons"] is not None)
 
     statistic_id = statistic_id_for(_coordinator(hass).entry_id)
@@ -440,12 +501,8 @@ async def test_warm_path_refolds_from_zero_when_anchor_window_empty(
     """
     records = mock_watersmart_client.async_get_hourly_data.return_value
     records[1]["gallons"] = 99.0  # a historical hour restated by upstream
-    last_start = dt.datetime.fromtimestamp(
-        records[-1]["read_datetime"], tz=dt.UTC
-    ).replace(minute=0, second=0, microsecond=0)
-    restated_start = dt.datetime.fromtimestamp(
-        records[1]["read_datetime"], tz=dt.UTC
-    ).replace(minute=0, second=0, microsecond=0)
+    last_start = _bucket_start(records[-1]["read_datetime"])
+    restated_start = _bucket_start(records[1]["read_datetime"])
 
     statistic_id = statistic_id_for(_coordinator(hass).entry_id)
     # A prior row exists, but the anchor window (a refold-window back) is empty.
@@ -536,9 +593,7 @@ async def test_restated_historical_hour_within_48h_upserts(
 ):
     """A restated value within the 48h window flows through to the recorder."""
     records = mock_watersmart_client.async_get_hourly_data.return_value
-    last_start = dt.datetime.fromtimestamp(
-        records[-1]["read_datetime"], tz=dt.UTC
-    ).replace(minute=0, second=0, microsecond=0)
+    last_start = _bucket_start(records[-1]["read_datetime"])
     target_ts = int((last_start - dt.timedelta(hours=24)).timestamp())
     for r in records:
         if r["read_datetime"] == target_ts:
